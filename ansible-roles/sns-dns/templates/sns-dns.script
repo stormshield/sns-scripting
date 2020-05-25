@@ -1,0 +1,17 @@
+#create objects
+{% for server in dns_servers %}
+CONFIG OBJECT HOST NEW name="{{ server.host }}"" ip="{{ server.ip }}" update=1
+{% endfor %}
+CONFIG OBJECT ACTIVATE
+
+#clean dns configuration
+{% for server in dns_old_servers.data.Server %}
+CONFIG DNS SERVER REMOVE {{ dns_old_servers.data.Server[server] }}
+{% endfor %}
+
+
+#configure dns
+{% for server in dns_servers %}
+CONFIG DNS SERVER ADD {{ server.host }}
+{% endfor %}
+CONFIG DNS ACTIVATE

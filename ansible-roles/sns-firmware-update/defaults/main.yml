@@ -1,0 +1,6 @@
+---
+# defaults file for sns-firmware-update
+download_path: "{{ lookup('env', 'HOME') }}/Downloads"
+arch:  "{{ hostvars[inventory_hostname].arch }}"
+model:  "{{ hostvars[inventory_hostname].model }}"
+version: ""

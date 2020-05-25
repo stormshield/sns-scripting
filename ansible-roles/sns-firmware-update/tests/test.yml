@@ -1,0 +1,7 @@
+---
+- hosts: all
+  serial: 1
+  roles:
+    - role: sns-firmware-update
+      version: 3.8.0
+

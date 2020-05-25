@@ -1,0 +1,50 @@
+# CONFIG OBJECT URLCATEGORYGROUP NEW name=<urlcategorygroupname> [comment=<urlcategorygroup comment>] [update=<0|1>]
+# CONFIG OBJECT URLCATEGORYGROUP ADDTO group=<urlcategorygroup name> node=<node to add name> [update=<0|1|2>]
+
+- name: Creating urlcategorygroup
+  set_fact:
+    script: "{{ script }}CONFIG OBJECT URLCATEGORYGROUP NEW name={{ urlcategorygroup.name }} comment=\"{{ urlcategorygroup.comment if urlcategorygroup.comment is defined else '' }}\"\n"
+  when: "current.data.Object
+         | selectattr('type', 'equalto', 'urlcategorygroup')
+         | selectattr('name', 'equalto', urlcategorygroup.name)
+         | list | length == 0"
+
+- name: Updating urlcategorygroup
+  set_fact:
+    script: "{{ script }}CONFIG OBJECT URLCATEGORYGROUP NEW update=1 name={{ urlcategorygroup.name }} comment=\"{{ urlcategorygroup.comment if urlcategorygroup.comment is defined else '' }}\"\n"
+  when: "current.data.Object
+         | selectattr('type', 'equalto', 'urlcategorygroup')
+         | selectattr('name', 'equalto', urlcategorygroup.name)
+         | list | length == 1"
+
+- block:
+  - name: List urlcategorygroups
+    sns_command:
+      appliance: "{{ hostvars[inventory_hostname].appliance }}"
+      command: "CONFIG OBJECT URLCATEGORYGROUP SHOW name={{ urlcategorygroup.name }}"
+    register: urlcategorygroup_show
+    changed_when: False
+
+  - name: Empty urlcategorygroup
+    set_fact:
+      script: "{{ script }}CONFIG OBJECT URLCATEGORYGROUP REMOVEFROM group={{ urlcategorygroup.name }} node=\"{{ item.name }}\"\n"
+    with_items: "{{ urlcategorygroup_show.data[urlcategorygroup.name] }}"
+    when: urlcategorygroup_show.ret != 200
+  when: urlcategorygroup.mode is not defined or urlcategorygroup.mode == 'reset'
+
+- name: Add urlgroups to urlcategorygroup
+  set_fact:
+    script: "{{ script }}CONFIG OBJECT URLCATEGORYGROUP ADDTO group={{ urlcategorygroup.name }} node=\"{{ category }}\"\n"
+  loop: "{{ urlcategorygroup.members }}"
+  loop_control:
+    loop_var: category
+  when: urlcategorygroup.mode is not defined or urlcategorygroup.mode == 'add' or urlcategorygroup.mode == 'reset'
+
+- name: Delete urlgroups from urlcategorygroup
+  set_fact:
+    script: "{{ script }}CONFIG OBJECT URLCATEGORYGROUP REMOVEFROM group={{ urlcategorygroup.name }} node=\"{{ category }}\"\n"
+  loop: "{{ urlcategorygroup.members }}"
+  loop_control:
+    loop_var: category
+  when: urlcategorygroup.mode is defined and urlcategorygroup.mode == 'del'
+

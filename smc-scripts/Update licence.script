@@ -1,0 +1,8 @@
+###############################################################
+# 
+# Update licence of active firewall
+# Licence name must be firewall_serial.licence
+# 
+###############################################################
+
+SYSTEM LICENCE UPLOAD $FROM_DATA_FILE("%FW_SERIAL%.licence")

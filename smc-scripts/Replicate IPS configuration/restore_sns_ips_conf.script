@@ -1,0 +1,12 @@
+###############################################################
+# 
+# Restore the IPS configuration for one or several SNS firewall(s) 
+# 
+# The $FROM_DATA_FILE argument indicates the name of the file that will 
+# be uploaded to the firewall(s)
+# 
+###############################################################
+
+
+# Restore the IPS configuration
+CONFIG RESTORE list=securityinspection $FROM_DATA_FILE("backup-IPS-Conf.na")

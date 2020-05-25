@@ -1,0 +1,6 @@
+---
+# defaults file for sns-ntp
+ntp_state: 1
+ntp_servers: []
+timezone: ""
+reboot_if_needed: false

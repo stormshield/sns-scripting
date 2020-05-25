@@ -1,0 +1,40 @@
+---
+# create range
+# name=<rangename> [begin=<range first ip> end=<range last ip>] [beginv6=<range first ipv6> endv6=<range last ipv6>] [color=xxxxxx] [comment=<comment>]
+
+- name: Build command (name)
+  set_fact:
+    cmd: "CONFIG {{ 'GLOBAL ' if scope == 'global' else '' }}OBJECT HOST NEW update=1 name={{ item.name }}"
+
+- name : Build command (begin)
+  set_fact:
+    cmd: "{{ cmd }} begin={{ item.begin }}"
+  when: item.begin is defined
+
+- name : Build command (end)
+  set_fact:
+    cmd: "{{ cmd }} end={{ item.end }}"
+  when: item.end is defined
+
+- name : Build command (beginv6)
+  set_fact:
+    cmd: "{{ cmd }} beginv6={{ item.beginv6 }}"
+  when: item.beginv6 is defined
+
+- name : Build command (endv6)
+  set_fact:
+    cmd: "{{ cmd }} endv6={{ item.endv6 }}"
+  when: item.endv6 is defined
+
+- name : Build command (color)
+  set_fact:
+    cmd: "{{ cmd }} color={{ item.color }}"
+  when: item.color is defined
+
+- name : Build command (comment)
+  set_fact:
+    cmd: "{{ cmd }} comment=\"{{ item.comment }}\""
+  when: item.comment is defined
+
+- set_fact:
+      script: "{{ script }}{{ cmd }}\n"

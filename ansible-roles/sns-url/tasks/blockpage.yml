@@ -1,0 +1,13 @@
+- name: Upload blockpage
+  set_fact:
+    script: |
+      {{ script }}
+      CONFIG UPLOAD httpproxy_blockpage{{ blockpage.index }} < {{ blockpage.file }}
+  when: "blockpage.file is defined"
+
+- name: Rename blockpage
+  set_fact:
+    script: |
+      {{ script }}
+      CONFIG URLFILTERING BLOCKPAGE UPDATE index={{ blockpage.index }} name="{{ blockpage.name }}"
+  when: "blockpage.name is defined"

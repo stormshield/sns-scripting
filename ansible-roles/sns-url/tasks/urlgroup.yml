@@ -1,0 +1,53 @@
+# CONFIG OBJECT URLGROUP NEW name=<groupname> type=(urlgroup|cngroup) [comment=<comment>] [update=<0|1>]
+# CONFIG OBJECT URLGROUP ADDTO group=<groupname> type=(urlgroup|cngroup) url=<url> [comment=<comment>] [update=<0|1>]
+
+- name: Creating urlgroup
+  set_fact:
+    cmd: "CONFIG OBJECT URLGROUP NEW type=urlgroup name={{ urlgroup.name }} comment=\"{{ urlgroup.comment if urlgroup.comment is defined else '' }}\""
+  when: "current.data.Object
+         | selectattr('type', 'equalto', 'urlgroup')
+         | selectattr('name', 'equalto', urlgroup.name)
+         | list | length == 0"
+
+- name: Updating urlgroup
+  set_fact:
+    cmd: "CONFIG OBJECT URLGROUP NEW type=urlgroup update=1 name={{ urlgroup.name }} comment=\"{{ urlgroup.comment if urlgroup.comment is defined else '' }}\""
+  when: "current.data.Object
+         | selectattr('type', 'equalto', 'urlgroup')
+         | selectattr('name', 'equalto', urlgroup.name)
+         | list | length == 1"
+
+- set_fact:
+      script: "{{ script }}{{ cmd }}\n"
+
+- block:
+  - name: List urls
+    sns_command:
+      appliance: "{{ hostvars[inventory_hostname].appliance }}"
+      command: "CONFIG OBJECT URLGROUP SHOW type=urlgroup name={{ urlgroup.name }}"
+    register: urlgroup_show
+    changed_when: False
+
+  - name: Empty group
+    set_fact:
+      script: "{{ script }}CONFIG OBJECT URLGROUP REMOVEFROM type=urlgroup group={{ urlgroup.name }} url=\"{{ item.url }}\"\n"
+    with_items: "{{ urlgroup_show.data[urlgroup.name] }}"
+    when: urlgroup_show.ret != 200
+  when: urlgroup.mode is not defined or urlgroup.mode == 'reset'
+
+- name: Add urls
+  set_fact:
+    script: "{{ script }}CONFIG OBJECT URLGROUP ADDTO group={{ urlgroup.name }} type=urlgroup url=\"{{ url.url }}\" comment=\"{{ url.comment if url.comment is defined else '' }}\"\n"
+  loop: "{{ urlgroup.urls }}"
+  loop_control:
+    loop_var: url
+  when: urlgroup.mode is not defined or urlgroup.mode == 'add' or urlgroup.mode == 'reset'
+
+- name: Delete urls
+  set_fact:
+    script: "{{ script }}CONFIG OBJECT URLGROUP REMOVEFROM group={{ urlgroup.name }} type=urlgroup url=\"{{ url.url }}\"\n"
+  loop: "{{ urlgroup.urls }}"
+  loop_control:
+    loop_var: url
+  when: urlgroup.mode is defined and urlgroup.mode == 'del'
+

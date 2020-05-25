@@ -1,0 +1,12 @@
+###############################################################
+# To save the configuration of a SNS firewall
+# You need to execute the following command: CONFIG BACKUP
+#
+# The "list" option specifies the list of modules to save. The list of modules has to be comma-separated.
+# Available modules are the following: MailFiltering,UrlFiltering,SslFiltering,UrlGroup,Autoupdate,Services, SecurityInspection,Object,Filter,Vpn,Ldap,Network,Global
+# Use list=all in order to save all modules
+#
+# The $SAVE_TO_DATA_FILE argument indicates the name of the file in which the result of the execution will be saved
+###############################################################
+
+CONFIG BACKUP list=all $SAVE_TO_DATA_FILE("backup-%FW_NAME%.na")

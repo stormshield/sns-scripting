@@ -1,0 +1,97 @@
+SYSTEM IDENT "SNS_%FW_CUSTOM1%"
+
+CONFIG OBJECT HOST NEW NAME=GW comment="" IP="1.1.1.1" resolve=static mac=""
+CONFIG OBJECT ACTIVATE
+
+CONFIG NETWORK DEFAULTROUTE SET type=ipv4 name=GW
+CONFIG NETWORK DEFAULTROUTE ACTIVATE
+
+AUTOUPDATE
+
+CONFIG NETWORK INTERFACE RENAME ifname=ethernet1 name=LAN
+CONFIG NETWORK INTERFACE RENAME ifname=ethernet0 name=WAN
+CONFIG NETWORK ACTIVATE
+
+SYSTEM TIMEZONE SET zone=Europe/Paris
+SYSTEM LANGUAGE language=fr keyboard=fr
+CONFIG SYSEVENT ACTIVATE
+CONFIG NTP STATE on
+CONFIG NTP ADVANCED allowUnauth=on
+CONFIG NTP SERVER ADD name=global_NTP.CIRIL.FR
+CONFIG NTP ACTIVATE
+CONFIG PASSWDPOLICY SET minLength=1 minSetOfChars=None
+CONFIG PASSWDPOLICY ACTIVATE
+
+CONFIG WEBADMIN PORT global_SMC_HTTPS_ADMIN_SN
+CONFIG WEBADMIN ACCESS ADD global_SMC_GRP_IP_PUB_PARTNER
+CONFIG WEBADMIN ACTIVATE
+
+CONFIG CONSOLE SSH state=1 userpass=1 port=ssh
+CONFIG CONSOLE ACTIVATE
+
+CONFIG AUTOBACKUP SET state=1 backuppassword=*********
+CONFIG AUTOBACKUP ACTIVATE
+CONFIG AUTOBACKUP LAUNCH
+
+config object servicegroup removefrom group=full_srv node=smtp
+config object servicegroup removefrom group=full_srv node=https
+config object servicegroup removefrom group=full_srv node=http
+config object servicegroup removefrom group=full_srv node=ftp
+config object servicegroup removefrom group=full_srv node=dns_udp
+config object activate
+
+CONFIG SLOT UPDATE type=filter slot=5 name=%FW_CUSTOM1%_FILTER
+
+config filter rule addsep collapse=0 color=FF0000 comment="MAP OUT" index=5 global=0 type=nat position=1
+config filter rule insert type=nat index=5 global=0 state=on action=nat srctarget=Network_LAN dsttarget=internet natsrctarget=Firewall_WAN dstif=WAN natsrcport=ephemeral_fw natsrcportop=eq natsrcportlb=random natdsttarget=internet position=2 output=xml comment=""
+
+config filter rule addsep collapse=0 color=FF0000 comment="ADMINISTRATION PARTNER" index=5 global=0 type=filter position=1
+config filter rule insert type=filter index=5 global=0 state=on action=pass srctarget=global_SMC_GRP_IP_PUB_PARTNER dsttarget=Firewall_WAN dstport=global_SMC_HTTPS_ADMIN_SN,firewall_auth,firewall_srv,ssh position=2 output=xml comment=""
+config filter rule addsep collapse=0 color=008000 comment="VPN SSL CLIENT" index=5 global=0 type=filter position=3
+config filter rule addsep collapse=0 color=DD3300 comment="VPN IPSEC" index=5 global=0 type=filter position=4
+config filter rule addsep collapse=0 color=FF6600 comment="DECRYPT SSL" index=5 global=0 type=filter position=5
+config filter rule insert type=filter state=off action=decrypt loglevel=none index=5 global=0 srctarget=Network_LAN dsttarget=INTERNET dstport=https sslfiltering=00 position=6 output=xml comment=""
+config filter rule addsep collapse=0 color=0000FF comment="LAN => WAN" index=5 global=0 type=filter position=7
+config filter rule insert type=filter index=5 global=0 state=on action=pass srctarget=Network_LAN dsttarget=INTERNET dstport=dns position=8 output=xml comment=""
+config filter rule insert type=filter index=5 global=0 state=on action=pass srctarget=Network_LAN dsttarget=INTERNET dstport=http,https antivirus=on position=9 output=xml comment=""
+config filter rule insert type=filter index=5 global=0 state=on action=pass srctarget=Network_LAN dsttarget=INTERNET dstport=smtp antivirus=on mailfilter=0 position=10 output=xml comment=""
+config filter rule insert type=filter index=5 global=0 state=on action=pass srctarget=Network_LAN dsttarget=INTERNET dstport=ftp,ftps,ftp-data,tftp,ftp_proxy ftpfiltering=on position=11 output=xml comment=""
+config filter rule insert type=filter index=5 global=0 state=on action=pass srctarget=Network_LAN dsttarget=INTERNET dstport=full_srv position=12 output=xml comment=""
+config filter activate
+CONFIG SLOT ACTIVATE type=filter slot=5
+
+CONFIG PROTOCOL http PROFILE PROXY CONFIG PartialDownload=2 index=1
+CONFIG PROTOCOL http PROFILE PROXY ANTIVIRUS OnFailedPolicy=pass index=1
+CONFIG PROTOCOL http ACTIVATE
+CONFIG PROTOCOL http PROFILE PROXY CONFIG PartialDownload=2 index=0
+CONFIG PROTOCOL http PROFILE PROXY ANTIVIRUS OnFailedPolicy=pass index=0
+CONFIG PROTOCOL http ACTIVATE
+CONFIG PROTOCOL ssl PROFILE PROXY CONFIG OnFailedPolicy=nodecrypt index=0
+CONFIG PROTOCOL ssl ACTIVATE
+CONFIG PROTOCOL ssl PROFILE PROXY CONFIG OnFailedPolicy=nodecrypt index=1
+CONFIG PROTOCOL ssl ACTIVATE
+
+CONFIG PROTOCOL SSL PROFILE ALARM UPDATE index=0 id=3 action=pass dump=0 email=off blacklist=off context=ssl:server:certificate
+CONFIG PROTOCOL SSL ACTIVATE
+CONFIG PROTOCOL SSL PROFILE ALARM UPDATE index=1 id=3 action=pass dump=0 email=off blacklist=off context=ssl:server:certificate
+CONFIG PROTOCOL SSL ACTIVATE
+CONFIG PROTOCOL HTTP PROFILE ALARM UPDATE index=1 id=55 action=pass dump=0 email=off blacklist=off context=protocol
+CONFIG PROTOCOL HTTP PROFILE ALARM UPDATE index=1 id=54 action=pass dump=0 email=off blacklist=off context=protocol
+CONFIG PROTOCOL HTTP PROFILE ALARM UPDATE index=1 id=53 action=pass dump=0 email=off blacklist=off context=protocol
+CONFIG PROTOCOL HTTP ACTIVATE
+CONFIG PROTOCOL HTTP PROFILE ALARM UPDATE index=0 id=55 action=pass dump=0 email=off blacklist=off context=protocol
+CONFIG PROTOCOL HTTP PROFILE ALARM UPDATE index=0 id=54 action=pass dump=0 email=off blacklist=off context=protocol
+CONFIG PROTOCOL HTTP PROFILE ALARM UPDATE index=0 id=53 action=pass dump=0 email=off blacklist=off context=protocol
+CONFIG PROTOCOL HTTP ACTIVATE
+CONFIG PROTOCOL SSL PROFILE ALARM UPDATE index=1 id=117 action=pass dump=0 email=off blacklist=off context=protocol
+CONFIG PROTOCOL SSL PROFILE ALARM UPDATE index=1 id=118 action=pass dump=0 email=off blacklist=off context=protocol
+CONFIG PROTOCOL SSL ACTIVATE
+CONFIG PROTOCOL SSL PROFILE ALARM UPDATE index=0 id=117 action=pass dump=0 email=off blacklist=off context=protocol
+CONFIG PROTOCOL SSL PROFILE ALARM UPDATE index=0 id=118 action=pass dump=0 email=off blacklist=off context=protocol
+CONFIG PROTOCOL SSL ACTIVATE
+
+CONFIG ANTIVIRUS SHOW config=1
+CONFIG ANTIVIRUS OBJECTS config=1 BlockEncrypted=0
+CONFIG ANTIVIRUS ACTIVATE
+
+SYSTEM REBOOT

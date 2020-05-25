@@ -1,0 +1,33 @@
+# name=<servicename> port=<port number> proto=<tcp|udp|any> [toport=<porthigh>] [color=xxxxxx] [comment=<comment>]
+
+- name: Build command (name)
+  set_fact:
+    cmd: "CONFIG {{ 'GLOBAL ' if scope == 'global' else '' }}OBJECT SERVICE NEW update=1 name={{ item.name }}"
+
+- name : Build command (port)
+  set_fact:
+    cmd: "{{ cmd }} port={{ item.port }}"
+  when: item.port is defined
+
+- name : Build command (proto)
+  set_fact:
+    cmd: "{{ cmd }} proto={{ item.proto }}"
+  when: item.proto is defined
+
+- name : Build command (toport)
+  set_fact:
+    cmd: "{{ cmd }} toport={{ item.toport }}"
+  when: item.toport is defined
+
+- name : Build command (color)
+  set_fact:
+    cmd: "{{ cmd }} color={{ item.color }}"
+  when: item.color is defined
+
+- name : Build command (comment)
+  set_fact:
+    cmd: "{{ cmd }} comment=\"{{ item.comment }}\""
+  when: item.comment is defined
+
+- set_fact:
+      script: "{{ script }}{{ cmd }}\n"

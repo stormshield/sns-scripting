@@ -1,0 +1,47 @@
+# CONFIG SSLFILTERING UPDATE index=4 name=myurlslot comment=
+
+- block:
+  - name: Build command
+    set_fact:
+      cmd: "CONFIG SSLFILTERING UPDATE index={{ slot.index }}"
+
+  - name: Option name
+    set_fact:
+      cmd: "{{ cmd }} name=\"{{ slot.name }}\""
+    when: slot.name is defined
+
+  - name: Option comment
+    set_fact:
+      cmd: "{{ cmd }} comment=\"{{ slot.comment }}\""
+    when: slot.comment is defined
+
+  - set_fact:
+      script: "{{ script }}{{ cmd }}\n"
+
+  when: slot.name is defined or slot.comment is defined
+
+- name: Flush current rules
+  set_fact:
+    script: "{{ script }}CONFIG SSLFILTERING RULE REMOVE index={{ slot.index }} ruleid=all\n"
+  when: slot.mode is not defined or slot.mode == "reset"
+
+- name: Add rules
+  include: ssl_rule.yml
+  loop: "{{ slot.rules }}"
+  loop_control:
+    loop_var: rule
+  when: slot.mode is not defined or slot.mode == "reset" or slot.mode == "add"
+
+- name: Remove rules
+  set_fact:
+    script: |
+        {{ script }}
+        CONFIG SSLFILTERING RULE REMOVE index={{ slot.index }} ruleid={{ rule.ruleid }}
+  loop: "{{ slot.rules }}"
+  loop_control:
+    loop_var: rule
+  when: slot.mode is defined and slot.mode == "del"
+
+- name: Activate
+  set_fact:
+    script: "{{ script }}CONFIG SSLFILTERING ACTIVATE\n"

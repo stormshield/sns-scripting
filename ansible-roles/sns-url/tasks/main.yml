@@ -1,0 +1,141 @@
+---
+# tasks file for sns-url
+
+
+# CONFIG OBJECT URLGROUP SETBASE base=CLOUDURL|NETASQ
+# CONFIG URLFILTERING UPDATE index=4 name=myurlslot comment=
+# CONFIG URLFILTERING RULE INSERT state=On urlgroup=Any type=any action=blockpage0 comment= index=4
+# CONFIG URLFILTERING ACTIVATE
+
+# general parameters
+
+- set_fact:
+    script: ""
+
+- block:
+  - name: Get current URL base
+    sns_command:
+      appliance: "{{ hostvars[inventory_hostname].appliance }}"
+      command: "CONFIG OBJECT URLGROUP SETBASE"
+    register: current_base
+    changed_when: False
+
+  - name: Set URL base
+    sns_command:
+      appliance: "{{ hostvars[inventory_hostname].appliance }}"
+      force_modify: "{{ hostvars[inventory_hostname].force_modify | default(false) }}"
+      command: "CONFIG OBJECT URLGROUP SETBASE base={{ 'CLOUDURL' if base == 'cloud' else 'NETASQ' }}"
+    when: (base == 'cloud' and current_base.data.Config.URLFiltering|lower == 'netasq') or (base == 'embedded' and current_base.data.Config.URLFiltering|lower == 'cloudurl')
+
+  - name: Wait for base update
+    sns_command:
+      appliance: "{{ hostvars[inventory_hostname].appliance }}"
+      command: "MONITOR AUTOUPDATE"
+    register: monitor_autoupdate
+    when:  base == 'embedded' and current_base.data.Config.URLFiltering == 'CloudURL'
+    until: monitor_autoupdate.data.URLFiltering is defined and monitor_autoupdate.data.URLFiltering.state == "Uptodate"
+    retries: 20
+    delay: 30
+    changed_when: False
+
+  - debug:
+      msg: "{{ monitor_autoupdate }}"
+
+  when: base != ""
+
+- name: Get current objects
+  sns_command:
+    appliance: "{{ hostvars[inventory_hostname].appliance }}"
+    command: CONFIG OBJECT LIST type=urlgroup,urlcategorygroup,cngroup,cncategorygroup
+  register: current
+
+- block:
+  - name: Configure URL groups
+    include: urlgroup.yml
+    loop: "{{ urlgroups }}"
+    loop_control:
+      loop_var: urlgroup
+
+  - name: Configure URL category groups
+    include: urlcategorygroup.yml
+    loop: "{{ urlcategorygroups }}"
+    loop_control:
+      loop_var: urlcategorygroup
+
+  - name: Configure CN groups
+    include: cngroup.yml
+    loop: "{{ cngroups }}"
+    loop_control:
+      loop_var: cngroup
+
+  - name: Configure CN category groups
+    include: cncategorygroup.yml
+    loop: "{{ cncategorygroups }}"
+    loop_control:
+      loop_var: cncategorygroup
+
+  - name: Configure block pages
+    include: blockpage.yml
+    loop: "{{ blockpages }}"
+    loop_control:
+      loop_var: blockpage
+
+  when: state != "absent"
+
+- block:
+  - name: "Deleting urlcategorygroup"
+    set_fact:
+      script: "{{ script }}CONFIG OBJECT URLCATEGORYGROUP DELETE name={{ urlcategorygroup.name }}\n"
+    loop: "{{ urlcategorygroups }}"
+    loop_control:
+      loop_var: urlcategorygroup
+
+  - name: "Deleting urlgroup"
+    set_fact:
+      script: "{{ script }}CONFIG OBJECT URLGROUP DELETE name={{ urlgroup.name }} type=urlgroup\n"
+    loop: "{{ urlgroups }}"
+    loop_control:
+      loop_var: urlgroup
+
+  - name: "Deleting cncategorygroup"
+    set_fact:
+      script: "{{ script }}CONFIG OBJECT CNCATEGORYGROUP DELETE name={{ cncategorygroup.name }}\n"
+    loop: "{{ cncategorygroups }}"
+    loop_control:
+      loop_var: cncategorygroup
+
+  - name: "Deleting cngroup"
+    set_fact:
+      script: "{{ script }}CONFIG OBJECT URLGROUP DELETE name={{ cngroup.name }} type=cngroup\n"
+    loop: "{{ cngroups }}"
+    loop_control:
+      loop_var: cngroup
+
+  - name: "Deleting blockpage"
+    set_fact:
+      script: "{{ script }}CONFIG URLFILTERING BLOCKPAGE DEFAULT index={{ blockpage.index }}\n"
+    loop: "{{ blockpages }}"
+    loop_control:
+      loop_var: blockpage 
+
+  when: state == "absent"
+
+- name: Configure URL filtering
+  include: url_slot.yml
+  loop: "{{ urlfiltering }}"
+  loop_control:
+    loop_var: slot
+
+- name: Configure SSL filtering
+  include: ssl_slot.yml
+  loop: "{{ sslfiltering }}"
+  loop_control:
+    loop_var: slot
+
+- name: "Execute script"
+  sns_command:
+    appliance: "{{ hostvars[inventory_hostname].appliance }}"
+    force_modify: "{{ hostvars[inventory_hostname].force_modify | default(false) }}"
+    script: "{{ script }}"
+
+

@@ -1,0 +1,9 @@
+# Create object: NTP server
+CONFIG OBJECT HOST NEW name=NTP-Server ip="1.2.3.4" resolve=static update=1
+CONFIG OBJECT ACTIVATE
+
+# Set and activate NTP client (using NTP server object)
+CONFIG NTP STATE on
+CONFIG NTP ADVANCED allowUnauth=on
+CONFIG NTP SERVER ADD name=NTP-Server
+CONFIG NTP ACTIVATE

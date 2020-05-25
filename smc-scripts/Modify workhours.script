@@ -1,0 +1,3 @@
+# Create object
+CONFIG OBJECT TIME NEW name=workhours comment= color= yearDay= weekDay=1-5 time=09:00-18:00 date= global=0 update=1
+CONFIG OBJECT ACTIVATE

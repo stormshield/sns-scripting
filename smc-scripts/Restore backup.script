@@ -1,0 +1,11 @@
+###############################################################
+# 
+# Restore the configuration backup for one or several SNS firewall(s) 
+# 
+# The $FROM_DATA_FILE argument indicates the name of the file that will 
+# be uploaded to the firewall(s)
+# 
+###############################################################
+
+CONFIG RESTORE list=all $FROM_DATA_FILE("backup-%FW_NAME%.na")
+

@@ -1,0 +1,11 @@
+#################################################################
+# Restore URLs, Certificate names, URL and CN groups and the URL# 
+#base of a SNS firewall                                         #
+#################################################################
+
+
+CONFIG OBJECT URLGROUP SETBASE base=CLOUDURL
+
+
+# Restore the configuration
+CONFIG RESTORE list=urlfiltering fwserial=local $FROM_DATA_FILE("backup-URL_web_objects.na")

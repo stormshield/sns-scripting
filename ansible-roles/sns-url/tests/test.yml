@@ -1,0 +1,25 @@
+---
+- hosts: all
+  roles:
+    - role: sns-url
+      base: embedded
+      urlgroups:
+        - name: myurlgroup1
+          comment: "my url group 1"
+          urls:
+            - { url: "*.foo.bar", comment: "my url"}
+            - { url: "some.tld" }
+        - name: myurlgroup2
+          urls:
+            - { url: "foo.bar" }
+      urlcategorygroups:
+        - name: mycategorygroup
+          comment : "my category group"
+          members: [ myurlgroup1, myurlgroup2 ]
+      slots:
+        - index: 3
+          name: myurlslot
+          comment: "slot comment"
+          rules:
+            - { state: "On", action: block, urlgroup: ads, comment: "Block ads" }
+            - { state: "On", action: pass, urlgroup: any }

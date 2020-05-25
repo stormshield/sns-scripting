@@ -1,0 +1,34 @@
+---
+- hosts: all
+  roles:
+    - role: sns-object
+      hosts :
+        - { name: myhost1, ip: 1.2.3.4, comment: "My comment"}
+        - { name: myhost2, ip: 2.3.4.5, comment: "My comment"}
+      networks:
+        - {  name: mynetwork, ip: 10.0.0.0, mask: 255.255.255.0 }
+      netgroups:
+        - { name: mygroup, members: [myhost1, myhost2] }
+      services:
+        - { name: myservice1, port: 1234, proto: any, comment: "my service" }
+        - { name: myservice2, port: 2345, toport: 3456, proto: tcp}
+      servicegroups:
+        - { name: myservicegroup, members: [myservice1, myservice2] }
+      protocols:
+        - { name: myproto, protonumber: 100 }
+      routers:
+        - { name: myrouter, gatewaythreshold: 1, gateways: [ { type: principalgateway, host: myhost1 }, { type: backupgateway, host: myhost2 } ] }
+      geogroups:
+        - { name: mygeogroup, members: ["eu:fr", "eu:de"] }
+      iprepgroups:
+        - { name: myiprepgroup, members: [botnet, spam] }
+      internet:
+        object: Network_internals
+        operator: ne
+      fqdns:
+        - { name: my.fqdn.tld, ip: 10.0.0.1 }
+        - { name: my.fdn2.tld, ipv6: "fd00::1" }
+      timeobjects:
+        - { name: mytime1, time: "08:00-12:00", weekday: "1;2;3;4;5" }
+        - { name: mytime2, time: "14:00-18:00", weekday: "1;2;3;4;5" }
+

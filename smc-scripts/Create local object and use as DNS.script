@@ -1,0 +1,7 @@
+# Create a new host
+CONFIG OBJECT HOST NEW name=DNS-Backup-%FW_NAME% comment="Backup DNS server for site %FW_CUSTOM1%" ip="10.%FW_CUSTOM1%.0.54" resolve=static
+CONFIG OBJECT ACTIVATE
+
+# Set and activate DNS configuration with the new server
+CONFIG DNS SERVER ADD DNS-Backup-%FW_NAME%
+CONFIG DNS ACTIVATE

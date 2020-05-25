@@ -1,0 +1,17 @@
+# Create a new host for Web server
+CONFIG OBJECT HOST NEW name=%WEB_SRV_NAME%-%CITY% ip="%WEB_SRV_IP%" resolve=static update=1 comment="Created/updated on %NOW%, by SMC script"
+CONFIG OBJECT ACTIVATE
+
+# Create a new host for public IP address to publish this Web server
+CONFIG OBJECT HOST NEW name=%WEB_SRV_NAME%-%CITY%-Public ip="%PUBLIC_IP%" resolve=static update=1 comment="Created/updated on %NOW%, by SMC script"
+CONFIG OBJECT ACTIVATE
+
+# Allow Internet to access public ip by HTTP
+CONFIG FILTER RULE INSERT TYPE=filter STATE=on ACTION=pass srctarget=Internet dsttarget=%WEB_SRV_NAME%-%CITY%-Public dstport=http comment="Created on %NOW%, by SMC script" index=1 global=0 position=1
+
+# And create nat rule to Web server with redirection from public ip to Web server IP
+CONFIG FILTER RULE INSERT type=nat state=on index=1 action=nat srctarget=Internet dsttarget=%WEB_SRV_NAME%-%CITY%-Public dstport=http natsrctarget=Any natdsttarget=%WEB_SRV_NAME%-%CITY% natdstport=http comment="Created on %NOW%, by SMC script"
+
+# Activate all these rules
+CONFIG FILTER ACTIVATE
+CONFIG SLOT ACTIVATE type=filter slot=1

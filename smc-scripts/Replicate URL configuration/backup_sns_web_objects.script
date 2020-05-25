@@ -1,0 +1,7 @@
+###############################################################
+# Save URLs, Certificate names, URL and CN groups and the URL base of a SNS firewall
+#
+# The $SAVE_TO_DATA_FILE argument indicates the name of the file in which the result of the execution will be saved
+###############################################################
+
+CONFIG BACKUP list=urlfiltering $SAVE_TO_DATA_FILE("backup-URL_web_objects.na")

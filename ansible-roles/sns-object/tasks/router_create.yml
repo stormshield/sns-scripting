@@ -1,0 +1,88 @@
+# name=<router name> [comment=<comment>] [tries=<int>] [wait=<seconds>] [frequency=<seconds>] [gatewaythreshold=<int>] [activateallbackup=(on|off)] 
+# [loadbalancing=<none|connhash|srchash>] [onfailpolicy=(pass|block)]
+
+- name: Build command (name)
+  set_fact:
+    cmd: "CONFIG {{ 'GLOBAL ' if scope == 'global' else '' }}OBJECT ROUTER NEW update=1 name={{ router.name }}"
+
+- name : Build command (tries)
+  set_fact:
+    cmd: "{{ cmd }} tries={{ router.tries }}"
+  when: router.tries is defined
+
+- name : Build command (wait)
+  set_fact:
+    cmd: "{{ cmd }} wait={{ router.wait }}"
+  when: router.wait is defined
+
+- name : Build command (frequency)
+  set_fact:
+    cmd: "{{ cmd }} frequency={{ router.frequency }}"
+  when: router.frequency is defined
+
+- name : Build command (gatewaythreshold)
+  set_fact:
+    cmd: "{{ cmd }} gatewaythreshold={{ router.gatewaythreshold }}"
+  when: router.gatewaythreshold is defined
+
+- name : Build command (activateallbackup)
+  set_fact:
+    cmd: "{{ cmd }} activateallbackup={{ router.activateallbackup }}"
+  when: router.activateallbackup is defined
+
+- name : Build command (loadbalancing)
+  set_fact:
+    cmd: "{{ cmd }} loadbalancing={{ router.loadbalancing }}"
+  when: router.loadbalancing is defined
+
+- name : Build command (onfailpolicy)
+  set_fact:
+    cmd: "{{ cmd }} onfailpolicy={{ router.onfailpolicy }}"
+  when: router.onfailpolicy is defined
+
+- name : Build command (color)
+  set_fact:
+    cmd: "{{ cmd }} color={{ router.color }}"
+  when: router.color is defined
+
+- name : Build command (comment)
+  set_fact:
+    cmd: "{{ cmd }} comment=\"{{ router.comment }}\""
+  when: router.comment is defined
+
+- set_fact:
+      script: "{{ script }}{{ cmd }}\n"
+
+
+- block:
+  - name: Get router gateways
+    sns_command:
+      appliance: "{{ hostvars[inventory_hostname].appliance }}"
+      command: "CONFIG {{ 'GLOBAL ' if scope == 'global' else '' }}OBJECT ROUTER SHOW name={{ router.name }}"
+    register: router_show
+    changed_when: False
+
+  - name: Remove principal gateways
+    set_fact:
+      script: "{{ script }}CONFIG {{ 'GLOBAL ' if scope == 'global' else '' }}OBJECT ROUTER GATEWAY REMOVE name={{ router.name }} type=principalgateway host={{ gateway.host }}\n"
+    with_items: "{{ router_show.data.PrincipalGateway }}"
+    loop_control:
+      loop_var: gateway
+    when: router_show.ret != 200
+
+  - name: Remove backup gateways
+    set_fact:
+      script: "{{ script }}CONFIG {{ 'GLOBAL ' if scope == 'global' else '' }}OBJECT ROUTER GATEWAY REMOVE name={{ router.name }} type=backupgateway host={{ gateway.host }}\n"
+    with_items: "{{ router_show.data.BackupGateway }}"
+    loop_control:
+      loop_var: gateway
+    when: router_show.ret != 200
+
+  when: router.mode is not defined or router.mode != 'add'
+
+- name: Populate gateways
+  include: gateway_create.yml
+  with_items: "{{ router.gateways }}"
+  loop_control:
+    loop_var: gateway
+

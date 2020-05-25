@@ -1,0 +1,50 @@
+# CONFIG OBJECT CNCATEGORYGROUP NEW name=<CNCATEGORYGROUPname> [comment=<CNCATEGORYGROUP comment>] [update=<0|1>]
+# CONFIG OBJECT CNCATEGORYGROUP ADDTO group=<CNCATEGORYGROUP name> node=<node to add name> [update=<0|1|2>]
+
+- name: Creating cncategorygroup
+  set_fact:
+    script: "{{ script }}CONFIG OBJECT CNCATEGORYGROUP NEW name={{ cncategorygroup.name }} comment=\"{{ cncategorygroup.comment if cncategorygroup.comment is defined else '' }}\"\n"
+  when: "current.data.Object
+         | selectattr('type', 'equalto', 'cncategorygroup')
+         | selectattr('name', 'equalto', cncategorygroup.name)
+         | list | length == 0"
+
+- name: Updating cncategorygroup
+  set_fact:
+    script: "{{ script }}CONFIG OBJECT CNCATEGORYGROUP NEW update=1 name={{ cncategorygroup.name }} comment=\"{{ cncategorygroup.comment if cncategorygroup.comment is defined else '' }}\"\n"
+  when: "current.data.Object
+         | selectattr('type', 'equalto', 'cncategorygroup')
+         | selectattr('name', 'equalto', cncategorygroup.name)
+         | list | length == 1"
+
+- block:
+  - name: List cncategorygroups
+    sns_command:
+      appliance: "{{ hostvars[inventory_hostname].appliance }}"
+      command: "CONFIG OBJECT CNCATEGORYGROUP SHOW name={{ cncategorygroup.name }}"
+    register: cncategorygroup_show
+    changed_when: False
+
+  - name: Empty cncategorygroup
+    set_fact:
+      script: "{{ script }}CONFIG OBJECT CNCATEGORYGROUP REMOVEFROM group={{ cncategorygroup.name }} node=\"{{ item.name }}\"\n"
+    with_items: "{{ cncategorygroup_show.data[cncategorygroup.name] }}"
+    when: cncategorygroup_show.ret != 200
+
+  when: cncategorygroup.mode is not defined or cncategorygroup.mode == 'reset'
+
+- name: Add cngroups to cncategorygroup
+  set_fact:
+    script: "{{ script }}CONFIG OBJECT CNCATEGORYGROUP ADDTO group={{ cncategorygroup.name }} node=\"{{ category }}\"\n"
+  loop: "{{ cncategorygroup.members }}"
+  loop_control:
+    loop_var: category
+  when: cncategorygroup.mode is not defined or cncategorygroup.mode == 'add' or cncategorygroup.mode == 'reset'
+
+- name: Delete cngroups from cncategorygroup
+  set_fact:
+    script: "{{ script }}CONFIG OBJECT CNCATEGORYGROUP REMOVEFROM group={{ cncategorygroup.name }} node=\"{{ category }}\"\n"
+  loop: "{{ cncategorygroup.members }}"
+  loop_control:
+    loop_var: category
+  when: cncategorygroup.mode is defined and cncategorygroup.mode == 'del'

@@ -1,0 +1,12 @@
+---
+- hosts: all
+  roles:
+    - role: sns-policy
+      activate: yes
+      slot: 5
+      filter:
+        - { action: pass, srctarget: any, dsttarget: Firewall_out, dstport: ssh, comment: "Allow SSH"}
+        - { action: block, srctarget: any, srcif: out, dsttarget: any }
+        - { action: pass, srctarget: any, dsttarget: any, inspection: firewall }
+      nat:
+        - { action: nat, srctarget: network_in, dsttarget: Internet, dstif: out, natsrctarget: firewall_out, natsrcport: ephemeral_fw }

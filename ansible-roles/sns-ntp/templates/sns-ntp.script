@@ -1,0 +1,33 @@
+#update timezone
+{% if timezone|length %}
+SYSTEM TIMEZONE SET zone="{{ timezone }}"
+{% endif %}
+
+#create objects
+{% for ntp in ntp_servers %}
+CONFIG OBJECT HOST NEW name="{{ ntp.host }}"" ip="{{ lookup('dig', ntp.host, 'qtype=A', wantlist=True)[0] }}" resolve=dynamic update=1
+{% endfor %}
+CONFIG OBJECT ACTIVATE
+
+#clean ntp configuration
+{% for host in ntp_old_servers.value %}
+CONFIG NTP SERVER REMOVE {{ host.name }}
+{% endfor %}
+
+{% for line in ntp_old_keys.value %}
+CONFIG NTP KEY REMOVE {{ line.keynum }}
+{% endfor %}
+
+#configure ntp
+{% set index=0 %}
+{% for server in ntp_servers %}
+{% if 'key' in server %}
+{% set index=index + 1 %}
+CONFIG NTP KEY ADD md5-ascii={{ server.key }} keynum={{ index }}
+CONFIG NTP SERVER ADD name={{ server.host }} keynum={{ index }}
+{% else %}
+CONFIG NTP SERVER ADD name={{ server.host }}
+{% endif %}
+{% endfor %}
+CONFIG NTP STATE {{ ntp_state }}
+CONFIG NTP ACTIVATE

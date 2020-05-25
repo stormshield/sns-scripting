@@ -1,0 +1,24 @@
+# This script will import a CA and the CA CRL.
+# Read the comment to only update the CRL
+#
+# PKI IMPORT command
+# Description: Import a item into the PKI.
+# When the password contains words separated by one or more blank spaces,
+# please consider to enclose them with quotation marks;
+# otherwise the import will fail
+#
+# PKI IMPORT arguments
+# format=<p12|pem|der>
+# type=<req|cert|pkey|crl|ca|all>
+# [password=<pass>]
+# [force=<0|1>]
+
+# Files used (CA, CRL) in script must be copied in "/var/tmp/sns-cli/input" directory.
+
+# First, we import CA
+# Comment this line if you want to only update the CRL.
+PKI IMPORT format="pem" type="all" force=1 $FROM_DATA_FILE("Tmp-ca.pem")
+
+# Then, we import CRL
+# Set force=1 if you want to only update the CRL.
+PKI IMPORT format="pem" type="all" force=1 $FROM_DATA_FILE("Tmp-crl.pem")

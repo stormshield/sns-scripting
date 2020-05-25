@@ -1,0 +1,21 @@
+###############################################################
+# To save the configuration of each peer of a HA cluster
+# You need to execute twice the following command: CONFIG BACKUP
+#
+# The "list" option specifies the list of modules to save. The list of modules has to be comma-separated.
+# Available modules are the following:
+# MailFiltering,UrlFiltering,SslFiltering,UrlGroup,Autoupdate,Services,SecurityInspection,Object,Filter,Vpn,Ldap,Network,Global
+# Use list=all in order to save all modules
+#
+# On a HA cluster, use the serial number to refer to the peer to save
+# To do this, use the "fwserial" option
+#
+# The $SAVE_TO_DATA_FILE argument indicates the name of the file in which the
+# result of the execution will be saved
+###############################################################
+
+# For the active node
+CONFIG BACKUP list=all fwserial=%FW_SERIAL% $SAVE_TO_DATA_FILE("backup-active-node-%FW_NAME%.na")
+
+# For the passive node
+CONFIG BACKUP list=all fwserial=%HA_PEER_SERIAL% $SAVE_TO_DATA_FILE("backup-passive-node-%FW_NAME%.na")

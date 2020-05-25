@@ -1,0 +1,69 @@
+---
+# tasks file for sns-policy
+
+- set_fact:
+    script: ""
+
+- block:
+    - set_fact:
+        script: |
+            {{ script }}
+            CONFIG SLOT UPDATE type=filter slot={{ slot }} name="{{ slotname }}" comment="{{ comment }}" global={{ '0' if scope == 'local' else '1'}}
+  when: slotname != None
+
+- name: Flush Filter/NAT rules
+  set_fact:
+    script: |
+        {{ script }}
+        CONFIG FILTER RULE REMOVE index={{ slot }} type=filter position=all global={{ '0' if scope == 'local' else '1'}}
+        CONFIG FILTER RULE REMOVE index={{ slot }} type=nat position=all global={{ '0' if scope == 'local' else '1'}}
+  when: mode == "reset"
+
+- name: Insert filter rules
+  include: rule.yml type=filter
+  loop: "{{ filter }}"
+  loop_control:
+    loop_var: rule
+  when: mode == "reset" or mode == "add"
+
+- name: Remove filter rules
+  set_fact:
+    script: |
+        {{ script }}
+        CONFIG FILTER RULE REMOVE index={{ slot }} type=filter position={{rule.position}} global={{ '0' if scope == 'local' else '1'}}
+  loop: "{{ filter }}"
+  loop_control:
+    loop_var: rule
+  when: mode == "del"
+
+- name: Insert NAT rules
+  include: rule.yml type=nat
+  loop: "{{ nat }}"
+  loop_control:
+    loop_var: rule
+  when: mode == "reset" or mode == "add"
+
+- name: Remove NAT rules
+  set_fact:
+    script: |
+        {{ script }}
+        CONFIG FILTER RULE REMOVE index={{ slot }} type=nat position={{rule.position}} global={{ '0' if scope == 'local' else '1'}}
+  loop: "{{ nat }}"
+  loop_control:
+    loop_var: rule
+  when: mode == "del"
+
+- name: Save rules
+  set_fact:
+    script: "{{ script }}CONFIG FIlTER ACTIVATE\n"
+
+- name: Activate slot
+  set_fact:
+    script: "{{ script }}CONFIG SLOT ACTIVATE type=filter slot={{ slot }} global={{ '0' if scope == 'local' else '1'}}\n"
+  when: activate
+
+- name: "Execute script"
+  sns_command:
+    appliance: "{{ hostvars[inventory_hostname].appliance }}"
+    force_modify: "{{ hostvars[inventory_hostname].force_modify | default(false) }}"
+    script: "{{ script }}"

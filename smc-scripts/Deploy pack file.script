@@ -1,0 +1,1 @@
+CONFIG RESTORE list=fwadmin $FROM_DATA_FILE("%FW_NAME%.pack")

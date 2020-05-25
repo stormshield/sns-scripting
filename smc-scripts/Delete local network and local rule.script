@@ -1,0 +1,9 @@
+# Delete rule
+CONFIG FILTER RULE REMOVE TYPE=filter index=1 position=1
+
+# Apply modifications rule
+CONFIG FILTER ACTIVATE
+CONFIG SLOT ACTIVATE type=filter slot=1
+
+# Delete object LAN (depending on site ID)
+CONFIG OBJECT NETWORK DELETE NAME=Users_LAN

@@ -1,0 +1,60 @@
+---
+# tasks file for sns-firmware-update
+
+- name: Get appliance information
+  sns_command:
+    appliance: "{{ appliance }}"
+    command: SYSTEM PROPERTY
+  register: sysprop
+  changed_when: False
+
+- name: Extract version
+  sns_getconf:
+    result: "{{ sysprop.result }}"
+    section: Result
+    token: Version
+  register: myversion
+  changed_when: False
+
+- name: Check for HA cluster
+  sns_command:
+    appliance: "{{ appliance }}"
+    command: HA INFO
+  register: hainfo
+  changed_when: False
+
+- block:
+    - name: Check if firmware is not already installed
+      debug:
+        msg: "Firmware already installed"
+    - meta: end_play
+  when: "version == myversion.value"
+
+- block:
+    - name: Check if appliance firmware is not more recent
+      debug:
+        msg: "Firmware on appliance is more recent"
+    - meta: end_play
+  when: "myversion.value is version(version, '>')"
+
+- name: Check if firmware update is already downloaded
+  stat:
+    path: "{{ download_path }}/fwupd-{{ version }}-SNS-{{ arch }}-{{ model }}.maj"
+  register: firmware_file
+
+- name: Download firmware from mystormshield
+  get_url:
+    url: "http://data.stormshield.eu/data2/sns/Firmwares/{{ version }}/fwupd-{{ version }}-SNS-{{ arch }}-{{ model }}.maj"
+    dest: "{{ download_path }}"
+  when: firmware_file.stat.exists == False
+
+- debug:
+    msg: "Updating firmware from {{ myversion.value }} to {{ version }}"
+
+- name: Update appliance
+  include: sns-firmware-update-single-task.yaml
+  when: "hainfo.ret == 200"
+
+- name: Update cluster
+  include: sns-firmware-update-cluster-task.yaml
+  when: "hainfo.ret == 100"

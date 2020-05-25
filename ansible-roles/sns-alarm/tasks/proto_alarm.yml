@@ -1,0 +1,11 @@
+
+
+- name: "Configuring alarms for protocol {{ protocol }}"
+  include: alarm.yml
+  loop: "{{ alarms[protocol] }}"
+  loop_control:
+    loop_var: alarm
+
+- name: "Activate protocol"
+  set_fact:
+    script: "{{ script }}CONFIG PROTOCOL {{ protocol.upper() }} ACTIVATE\n"

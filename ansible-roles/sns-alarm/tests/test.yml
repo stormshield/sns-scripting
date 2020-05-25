@@ -1,0 +1,10 @@
+---
+- hosts: all
+  roles:
+    - role: sns-alarm
+      alarms:
+        http: 
+          - { index: 1, context: "http:client:header", id: 67, level: ignore }
+          - { index: 0, context: "protocol", id: 49, action: pass, level: ignore }
+        dns:
+          - { index: 1, context: "dns_udp:request", id: 1, level: minor, dump: 1 }

@@ -1,0 +1,5 @@
+firewall;CITY;WEB_SRV_NAME;WEB_SRV_IP;PUBLIC_IP
+Alpha;Paris;Web-srv-1;10.2.10.80;234.45.6.3
+Alpha;Paris;Web-srv-2;10.200.10.80;48.67.91.45
+Bravo;Berlin;Web-srv-1;10.2.20.80;34.62.250.29
+Charlie;Madrid;Web-srv-1;10.2.30.80;81.29.9.18

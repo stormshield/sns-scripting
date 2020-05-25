@@ -1,0 +1,166 @@
+---
+# tasks file for sns-object
+
+- set_fact:
+    script: ""
+
+- block:
+  - name: "Creating hosts"
+    include_tasks: host_create.yml
+    loop: "{{ hosts }}"
+
+  - name: "Creating ranges"
+    include_tasks: range_create.yml
+    loop: "{{ ranges }}"
+
+  - name: "Creating networks"
+    include_tasks: network_create.yml
+    loop: "{{ networks }}"
+
+  - name: "Creating groups"
+    include_tasks: group_create.yml
+    loop: "{{ netgroups }}"
+    loop_control:
+      loop_var: grp
+
+  - name: "Creating services"
+    include_tasks: service_create.yml
+    loop: "{{ services }}"
+
+  - name: "Creating servicegroups"
+    include_tasks: servicegroup_create.yml
+    loop: "{{ servicegroups }}"
+    loop_control:
+      loop_var: grp
+
+  - name: "Creating protocols"
+    include_tasks: protocol_create.yml
+    loop: "{{ protocols }}"
+
+  - name: "Creating routers"
+    include_tasks: router_create.yml
+    loop: "{{ routers }}"
+    loop_control:
+      loop_var: router
+  
+  - name: "Creating geogroups"
+    include_tasks: geogroup_create.yml
+    loop: "{{ geogroups }}"
+    loop_control:
+      loop_var: grp
+
+  - name: "Creating iprepgroups"
+    include_tasks: iprepgroup_create.yml
+    loop: "{{ iprepgroups }}"
+    loop_control:
+      loop_var: grp
+
+  - name: "Creating FQDNs"
+    include_tasks: fqdn_create.yml
+    loop: "{{ fqdnobjects }}"
+  
+  - name: "Creating time objects"
+    include_tasks: time_create.yml
+    loop: "{{ timeobjects }}"
+
+  - name: "Updating Internet object"
+    set_fact:
+      script: "{{ script }}CONFIG OBJECT INTERNET UPDATE object={{ internet.object }} operator={{ internet.operator }}\n"
+    when: internet is defined
+
+  - name: "Configuring QoS bandwidth"
+    set_fact:
+      script: "{{ script }}CONFIG OBJECT QOS SET bandwidth={{ qos.bandwidth }}\n"
+    when: "qos.bandwidth is defined"
+
+  - name: "Creating QIDs"
+    include_tasks: qid.yml
+    loop: "{{ qos.qids }}"
+    when: "qos.qids is defined"
+
+  - name: "Configuring QoS"
+    set_fact:
+      script: "{{ script }}CONFIG OBJECT QOS SET {{ ('drop=' + qos.drop|string + ' ') if qos.drop is defined else ''}}{{ ('defaultqueue=' + qos.defaultqueue + ' ') if qos.defaultqueue is defined else ''}}\nCONFIG OBJECT QOS ACTIVATE\n"
+    when: "qos.drop is defined or qos.defaultqueue is defined"
+
+  when: state != "absent"
+
+- block:
+  # order is important, groups first!
+  - name: "Deleting groups"
+    set_fact:
+      script: "{{ script }}CONFIG {{ 'GLOBAL ' if scope == 'global' else '' }}OBJECT GROUP DELETE name={{ item.name }}\n"
+    loop: "{{ netgroups }}"
+
+  - name: "Deleting servicegroups"
+    set_fact:
+      script: "{{ script }}CONFIG {{ 'GLOBAL ' if scope == 'global' else '' }}OBJECT SERVICEGROUP DELETE name={{ item.name }}\n"
+    loop: "{{ servicegroups }}"
+
+  - name: "Deleting routers"
+    set_fact:
+      script: "{{ script }}CONFIG {{ 'GLOBAL ' if scope == 'global' else '' }}OBJECT ROUTER DELETE name={{ item.name }}\n"
+    loop: "{{ routers }}"
+
+  - name: "Deleting hosts"
+    set_fact:
+      script: "{{ script }}CONFIG {{ 'GLOBAL ' if scope == 'global' else '' }}OBJECT HOST DELETE name={{ item.name }}\n"
+    loop: "{{ hosts }}"
+
+  - name: "Deleting ranges"
+    set_fact:
+      script: "{{ script }}CONFIG {{ 'GLOBAL ' if scope == 'global' else '' }}OBJECT HOST DELETE name={{ item.name }}\n"
+    loop: "{{ ranges }}"
+
+  - name: "Deleting networks"
+    set_fact:
+      script: "{{ script }}CONFIG {{ 'GLOBAL ' if scope == 'global' else '' }}OBJECT NETWORK DELETE name={{ item.name }}\n"
+    loop: "{{ networks }}"
+
+  - name: "Deleting services"
+    set_fact:
+      script: "{{ script }}CONFIG {{ 'GLOBAL ' if scope == 'global' else '' }}OBJECT SERVICE DELETE name={{ item.name }}\n"
+    loop: "{{ services }}"
+  
+  - name: "Deleting protocols"
+    set_fact:
+      script: "{{ script }}CONFIG {{ 'GLOBAL ' if scope == 'global' else '' }}OBJECT PROTOCOL DELETE name={{ item.name }}\n"
+    loop: "{{ protocols }}"
+
+  - name: "Deleting geogroups"
+    set_fact:
+      script: "{{ script }}CONFIG {{ 'GLOBAL ' if scope == 'global' else '' }}OBJECT GEOGROUP DELETE name={{ item.name }}\n"
+    loop: "{{ geogroups }}"
+
+  - name: "Deleting iprepgroups"
+    set_fact:
+      script: "{{ script }}CONFIG {{ 'GLOBAL ' if scope == 'global' else '' }}OBJECT IPREPGROUP DELETE name={{ item.name }}\n"
+    loop: "{{ iprepgroups }}"
+  
+  - name: "Deleting FQDNs"
+    set_fact:
+      script: "{{ script }}CONFIG {{ 'GLOBAL ' if scope == 'global' else '' }}OBJECT FQDN DELETE name={{ item.name }}\n"
+    loop: "{{ fqdnobjects }}"
+  
+  - name: "Deleting time objects"
+    set_fact:
+      script: "{{ script }}CONFIG {{ 'GLOBAL ' if scope == 'global' else '' }}OBJECT TIME DELETE name={{ item.name }}\n"
+    loop: "{{ timeobjects }}"
+
+  - name: "Deleting qids"
+    set_fact:
+      script: "{{ script }}CONFIG OBJECT QOS QID REMOVE qid={{ item.name }}\n"
+    loop: "{{ qos.qids }}"
+    when: "qos.qids is defined"
+
+  when: state == "absent"
+
+
+- name: "Execute script"
+  sns_command:
+    appliance: "{{ hostvars[inventory_hostname].appliance }}"
+    force_modify: "{{ hostvars[inventory_hostname].force_modify | default(false) }}"
+    script: |
+      {{ script }}
+      CONFIG OBJECT ACTIVATE
+

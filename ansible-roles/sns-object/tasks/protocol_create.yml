@@ -1,0 +1,23 @@
+# name=<protocolname> protonumber=<IP protocol number> [color=xxxxxx] [comment=<comment>]
+
+- name: Build command (name)
+  set_fact:
+    cmd: "CONFIG {{ 'GLOBAL ' if scope == 'global' else '' }}OBJECT PROTOCOL NEW update=1 name={{ item.name }}"
+
+- name : Build command (protonumber)
+  set_fact:
+    cmd: "{{ cmd }} protonumber={{ item.protonumber }}"
+  when: item.protonumber is defined
+
+- name : Build command (color)
+  set_fact:
+    cmd: "{{ cmd }} color={{ item.color }}"
+  when: item.color is defined
+
+- name : Build command (comment)
+  set_fact:
+    cmd: "{{ cmd }} comment=\"{{ item.comment }}\""
+  when: item.comment is defined
+
+- set_fact:
+      script: "{{ script }}{{ cmd }}\n"

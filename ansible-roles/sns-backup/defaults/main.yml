@@ -1,0 +1,8 @@
+---
+# defaults file for sns-backup
+list: all
+prefix_timestamp: false
+backup: ""
+backup_path: ""
+restore: ""
+password: ""

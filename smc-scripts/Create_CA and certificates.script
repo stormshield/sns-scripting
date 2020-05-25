@@ -1,0 +1,24 @@
+# Create CA (password is "Stormshield")
+PKI CA CREATE cn=CA_for_SMC_VPN_tunnels passphrase=Stormshield default=0 shortname=CA_for_SMC_VPN_tunnels nbdays=3650 O=Stormshield OU=SMC ST=Rhone C=FR L=Lyon size=4096
+PKI CA CONFIG CRLDP ADD uri=https://pki.mycompany.com/crl.pem caname=CA_for_SMC_VPN_tunnels
+
+# Get this CA PEM certificate
+PKI CA GET caname=CA_for_SMC_VPN_tunnels format=pem $SAVE_TO_DATA_FILE("CA_for_SMC_VPN_tunnels.pem")
+
+# Is this needed ?
+# CONFIG ACTIVATE cancelall
+
+# Create server certificates for each Firewall
+PKI CERTIFICATE CREATE type=server cn=Alpha.stormshield.eu passphrase=Stormshield caname=CA_for_SMC_VPN_tunnels nbdays=3650 shortname=Alpha.stormshield.eu altnames=Alpha.stormshield.eu O=Stormshield OU=SMC L=Lyon ST=Rhone C=FR size=2048
+PKI CERTIFICATE CREATE type=server cn=Bravo.stormshield.eu passphrase=Stormshield caname=CA_for_SMC_VPN_tunnels nbdays=3650 shortname=Bravo.stormshield.eu altnames=Bravo.stormshield.eu O=Stormshield OU=SMC L=Lyon ST=Rhone C=FR size=2048
+PKI CERTIFICATE CREATE type=server cn=Charlie.stormshield.eu passphrase=Stormshield caname=CA_for_SMC_VPN_tunnels nbdays=3650 shortname=Charlie.stormshield.eu altnames=Charlie.stormshield.eu O=Stormshield OU=SMC L=Lyon ST=Rhone C=FR size=2048
+PKI CERTIFICATE CREATE type=server cn=Delta.stormshield.eu passphrase=Stormshield caname=CA_for_SMC_VPN_tunnels nbdays=3650 shortname=Delta.stormshield.eu altnames=Delta.stormshield.eu O=Stormshield OU=SMC L=Lyon ST=Rhone C=FR size=2048
+
+
+# Get .p12 file for each firewall
+PKI CERTIFICATE GET name=Alpha.stormshield.eu caname=CA_for_SMC_VPN_tunnels password=Stormshield format=p12 $SAVE_TO_DATA_FILE("Alpha.p12")
+PKI CERTIFICATE GET name=Bravo.stormshield.eu caname=CA_for_SMC_VPN_tunnels password=Stormshield format=p12 $SAVE_TO_DATA_FILE("Bravo.p12")
+PKI CERTIFICATE GET name=Charlie.stormshield.eu caname=CA_for_SMC_VPN_tunnels password=Stormshield format=p12 $SAVE_TO_DATA_FILE("Charlie.p12")
+PKI CERTIFICATE GET name=Delta.stormshield.eu caname=CA_for_SMC_VPN_tunnels password=Stormshield format=p12 $SAVE_TO_DATA_FILE("Delta.p12")
+
+

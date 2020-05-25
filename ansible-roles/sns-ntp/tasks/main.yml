@@ -1,0 +1,80 @@
+---
+
+- name: create temporary file
+  tempfile:
+    state: file
+    suffix: sns-dns
+  register: tmpfile
+  changed_when: False
+
+- name: Get current ntp configuration (servers)
+  sns_command:
+    appliance: "{{ hostvars[inventory_hostname].appliance }}"
+    command: CONFIG NTP SERVER LIST
+  register: ntp_old_config
+  changed_when: False
+
+- name: Get current ntp configuration (keys)
+  sns_command:
+    appliance: "{{ hostvars[inventory_hostname].appliance }}"
+    command: CONFIG NTP KEY LIST
+  register: ntp_old_key_list
+  changed_when: False
+
+- name: Extract current ntp servers
+  sns_getconf:
+    result: "{{ ntp_old_key_list.result }}"
+    section: Result
+  register: ntp_old_keys
+  changed_when: False
+
+- name: Extract current ntp servers
+  sns_getconf:
+    result: "{{ ntp_old_config.result }}"
+    section: Result
+  register: ntp_old_servers
+  changed_when: False
+
+- name: Generate ntp configuration script
+  template:
+    src: sns-ntp.script
+    dest: "{{ tmpfile.path }}"
+  changed_when: False
+
+- name: Execute ntp configuration script
+  sns_command:
+    appliance: "{{ hostvars[inventory_hostname].appliance }}"
+    script: "{{ lookup('file', tmpfile.path) }}"
+    force_modify: "{{ hostvars[inventory_hostname].force_modify | default(false) }}"
+  register: script_result
+
+- block:
+  - name: Reboot the appliance
+    sns_command:
+      appliance: "{{ hostvars[inventory_hostname].appliance }}"
+      command: SYSTEM REBOOT
+      force_modify: true
+      expect_disconnect: true
+  - pause:
+      seconds: 30
+
+  - name: Wait for reboot
+    sns_command:
+      appliance: "{{ hostvars[inventory_hostname].appliance }}"
+      command: SYSTEM PROPERTY
+    ignore_errors: yes
+    register: result
+    until: "'ret' in result and result.ret == 100"
+    retries: 20
+    delay: 30
+    changed_when: False
+    
+  when: 
+    - reboot_if_needed
+    - script_result.need_reboot
+
+- name: Clean-up
+  file:
+    state: absent
+    path: "{{ tmpfile.path }}"
+  changed_when: False

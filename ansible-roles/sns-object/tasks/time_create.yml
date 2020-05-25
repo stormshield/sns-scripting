@@ -1,0 +1,60 @@
+# name=<timeobject name> time=(|hh:mm-hh:mm[;hh:mm-hh:mm]...) weekday=(|dow[-dow][;dow[-dow]]...) yearday=(|mm:dd[-mm:dd][;mm:dd[-mm:dd]]...) 
+# date=(|yyyy:mm:dd[:hh:mm][-yyyy:mm:dd[:hh:mm]]) ,color:xxxxxx, comment:<comment> 
+
+
+- name: Build command (name)
+  set_fact:
+    cmd: "CONFIG {{ 'GLOBAL ' if scope == 'global' else '' }}OBJECT TIME NEW update=1 name={{ item.name }}"
+
+- name : Build command (time)
+  set_fact:
+    cmd: "{{ cmd }} time={{ item.time }}"
+  when: item.time is defined
+
+- name : Build command (default time)
+  set_fact:
+    cmd: "{{ cmd }} time="
+  when: item.time is not defined
+
+- name : Build command (weekday)
+  set_fact:
+    cmd: "{{ cmd }} weekday={{ item.weekday }}"
+  when: item.weekday is defined
+
+- name : Build command (default weekday)
+  set_fact:
+    cmd: "{{ cmd }} weekday="
+  when: item.weekday is not defined
+
+- name : Build command (yearday)
+  set_fact:
+    cmd: "{{ cmd }} yearday={{ item.yearday }}"
+  when: item.yearday is defined
+
+- name : Build command (default yearday)
+  set_fact:
+    cmd: "{{ cmd }} yearday="
+  when: item.yearday is not defined
+
+- name : Build command (date)
+  set_fact:
+    cmd: "{{ cmd }} date={{ item.date }}"
+  when: item.date is defined
+
+- name : Build command (default date)
+  set_fact:
+    cmd: "{{ cmd }} date="
+  when: item.date is not defined
+
+- name : Build command (color)
+  set_fact:
+    cmd: "{{ cmd }} color={{ item.color }}"
+  when: item.color is defined
+
+- name : Build command (comment)
+  set_fact:
+    cmd: "{{ cmd }} comment=\"{{ item.comment }}\""
+  when: item.comment is defined
+
+- set_fact:
+      script: "{{ script }}{{ cmd }}\n"

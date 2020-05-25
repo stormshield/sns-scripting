@@ -1,0 +1,11 @@
+---
+# defaults file for sns-policy
+slotname: null
+comment: null
+filter: []
+nat: []
+scope: local
+slot: 5
+activate: yes
+mode: reset
+

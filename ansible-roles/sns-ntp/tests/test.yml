@@ -1,0 +1,57 @@
+---
+- hosts: all
+  roles:
+    - role: sns-ntp
+      timezone: "Europe/Paris"
+      ntp_servers:
+        - { host: "fr.pool.ntp.org"}
+        - { host: "be.pool.ntp.org", key: "12345678"}
+      reboot_if_needed: true
+
+  tasks:
+    - name: Check timezone configuration
+      sns_command:
+        appliance: "{{ hostvars[inventory_hostname].appliance }}"
+        command: SYSTEM TIMEZONE GET
+      register: tz
+      changed_when: False
+    - fail:
+        msg: Timezone is not "Europe/Paris"
+      when: tz.data.Result.timezone != "Europe/Paris"
+
+    - name: Check NTP key configuration
+      sns_command:
+        appliance: "{{ hostvars[inventory_hostname].appliance }}"
+        command: CONFIG NTP KEY LIST
+      register: keylist
+      changed_when: False
+    - fail:
+        msg: NTP key is wrong
+      when: keylist.data.Result[0].data != "12345678"
+
+    - name: Check NTP server configuration
+      sns_command:
+        appliance: "{{ hostvars[inventory_hostname].appliance }}"
+        command: CONFIG NTP SERVER LIST
+      register: serverlist
+      changed_when: False
+    - fail:
+        msg: NTP server 1 is wrong
+      when: serverlist.data.Result[0].name != "fr.pool.ntp.org"
+    - fail:
+        msg: NTP server 2 is wrong
+      when: serverlist.data.Result[1].name != "be.pool.ntp.org"
+    - fail:
+        msg: NTP server 2 key is wrong
+      when: serverlist.data.Result[1].keynum != "1"
+
+    - name: Check NTP state
+      sns_command:
+        appliance: "{{ hostvars[inventory_hostname].appliance }}"
+        command: CONFIG NTP SHOW
+      register: ntp_show
+      changed_when: False
+    - fail:
+        msg: NTP state is not on
+      when: ntp_show.data.Config.State != 'on'
+

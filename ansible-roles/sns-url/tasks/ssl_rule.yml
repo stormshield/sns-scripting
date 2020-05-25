@@ -1,0 +1,18 @@
+# CONFIG SSLFILTERING RULE INSERT index=<profile_idx> [ruleid=<digit>] state=on|off action=pass|block|blockpage0|blockpage1|blockpage2|blockpage3 urlgroup=<urlgroup object|urlcategory group object> [comment=<string>]
+
+- name: Build command
+  set_fact:
+    cmd: "CONFIG SSLFILTERING RULE INSERT index={{ slot.index }} state={{ 'on' if rule.state else 'off' }} action={{ rule.action }} cngroup=\"{{ rule.cngroup }}\""
+
+- name : Add option (ruleid)
+  set_fact:
+    cmd: "{{ cmd }} ruleid={{ rule.ruleid }}"
+  when: rule.ruleid is defined
+
+- name : Add option (comment)
+  set_fact:
+    cmd: "{{ cmd }} comment=\"{{ rule.comment }}\""
+  when: rule.comment is defined
+
+- set_fact:
+      script: "{{ script }}{{ cmd }}\n"

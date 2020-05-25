@@ -1,0 +1,17 @@
+---
+# tasks file for sns-ips
+
+- set_fact:
+    script: ""
+
+- name: Alarms configuration
+  include: proto_alarm.yml
+  loop: "{{ alarms|flatten(levels=1) }}"
+  loop_control:
+    loop_var: protocol
+
+- name: "Execute script"
+  sns_command:
+    appliance: "{{ hostvars[inventory_hostname].appliance }}"
+    force_modify: "{{ hostvars[inventory_hostname].force_modify | default(false) }}"
+    script: "{{ script }}"

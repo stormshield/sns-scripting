@@ -1,0 +1,35 @@
+# NEW name=<geogroupname> [comment=<geogroup comment>]
+# ADDTO group=<geogroup name> node=<node to add name>
+
+- name: Build command (name)
+  set_fact:
+    cmd: "CONFIG {{ 'GLOBAL ' if scope == 'global' else '' }}OBJECT GEOGROUP NEW update=1 name={{ grp.name }}"
+
+- name: Build command (comment)
+  set_fact:
+    cmd: "{{ cmd }} comment=\"{{ grp.comment }}\""
+  when: grp.comment is defined
+
+- set_fact:
+      script: "{{ script }}{{ cmd }}\n"
+
+- block:
+  - name: Get geogroup members
+    sns_command:
+      appliance: "{{ hostvars[inventory_hostname].appliance }}"
+      command: "CONFIG {{ 'GLOBAL ' if scope == 'global' else '' }}OBJECT GEOGROUP SHOW name={{ grp.name }}"
+    register: group_show
+    changed_when: False
+
+  - name: Empty group
+    set_fact:
+      script: "{{ script }}CONFIG {{ 'GLOBAL ' if scope == 'global' else '' }}OBJECT GEOGROUP REMOVEFROM group={{ grp.name }} node={{ item.name }}\n"
+    with_items: "{{ group_show.data[grp.name]}}"
+    when: group_show.ret != 200
+  when: grp.mode is not defined or grp.mode != 'add'
+
+- name: Populate group
+  set_fact:
+    script: "{{ script }}CONFIG {{ 'GLOBAL ' if scope == 'global' else '' }}OBJECT GEOGROUP ADDTO group={{ grp.name}} node={{ item }}\n"
+  with_items: "{{ grp.members }}"
+

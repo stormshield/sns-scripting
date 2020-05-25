@@ -1,0 +1,45 @@
+---
+# create host
+# name: <hostname>, ip: <ipaddress>, ipv6: <ipv6address>, type: router|server|host resolve: static|dynamic|manual mac: xx:xx:xx:xx:xx:xx color: xxxxxx comment: <comment>
+
+- name: Build command (name)
+  set_fact:
+    cmd: "CONFIG {{ 'GLOBAL ' if scope == 'global' else '' }}OBJECT HOST NEW update=1 name={{ item.name }}"
+
+- name : Build command (ip)
+  set_fact:
+    cmd: "{{ cmd }} ip={{ item.ip }}"
+  when: item.ip is defined
+
+- name : Build command (ipv6)
+  set_fact:
+    cmd: "{{ cmd }} ipv6={{ item.ipv6 }}"
+  when: item.ipv6 is defined
+
+- name : Build command (type)
+  set_fact:
+    cmd: "{{ cmd }} type={{ item.type }}"
+  when: item.type is defined
+
+- name : Build command (resolve)
+  set_fact:
+    cmd: "{{ cmd }} resolve={{ item.resolve }}"
+  when: item.resolve is defined
+
+- name : Build command (mac)
+  set_fact:
+    cmd: "{{ cmd }} mac={{ item.mac }}"
+  when: item.mac is defined
+
+- name : Build command (color)
+  set_fact:
+    cmd: "{{ cmd }} color={{ item.color }}"
+  when: item.color is defined
+
+- name : Build command (comment)
+  set_fact:
+    cmd: "{{ cmd }} comment=\"{{ item.comment }}\""
+  when: item.comment is defined
+
+- set_fact:
+      script: "{{ script }}{{ cmd }}\n"

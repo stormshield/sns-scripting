@@ -1,0 +1,20 @@
+---
+- hosts: all
+  roles:
+    - role: sns-dns
+      dns_servers:
+        - { host: "mydns1", ip: "10.0.0.1"}
+        - { host: "mydns2", ip: "10.0.0.2"}
+  tasks:
+    - name: Check DNS configuration
+      sns_command:
+        appliance: "{{ hostvars[inventory_hostname].appliance }}"
+        command: CONFIG DNS SERVER LIST
+      register: serverlist
+      changed_when: False
+    - fail:
+        msg: DNS server 1 is wrong
+      when: serverlist.data.Server["1"] != "mydns1"
+    - fail:
+        msg: DNS server 2 is wrong
+      when: serverlist.data.Server["2"] != "mydns2"

@@ -1,0 +1,25 @@
+---
+- hosts: all
+  roles:
+    - role: sns-backup
+      backup_path: "/tmp"
+      backup: "test.na"
+      password: "backuppassword"
+      list:
+        - object
+        - filter
+    - role: sns-backup
+      backup_path: "/tmp"
+      restore: "test.na"
+      password: "backuppassword"
+      list:
+        - object
+        - filter
+    - role: sns-backup
+      backup_path: "/tmp"
+      backup: "test.na"
+      password: "backuppassword"
+      timestamp_prefix: true
+      list:
+        - object
+        - filter

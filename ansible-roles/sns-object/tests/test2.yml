@@ -1,0 +1,31 @@
+---
+- hosts: all
+  roles:
+    - role: sns-object
+      state: absent
+      hosts :
+        - { name: myhost1 }
+        - { name: myhost2 }
+      networks:
+        - {  name: mynetwork }
+      netgroups:
+        - { name: mygroup }
+      services:
+        - { name: myservice1 }
+        - { name: myservice2 }
+      servicegroups:
+        - { name: myservicegroup }
+      protocols:
+        - { name: myproto }
+      routers:
+        - { name: myrouter }
+      geogroups:
+        - { name: mygeogroup }
+      iprepgroup:
+        - { name: myiprepgroup }
+      fqdns:
+        - { name: my.fqdn.tld }
+        - { name: my.fdn2.tld }
+      timeobjects:
+        - { name: mytime1 }
+        - { name: mytime2 }

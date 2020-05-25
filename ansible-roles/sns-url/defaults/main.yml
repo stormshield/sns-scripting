@@ -1,0 +1,11 @@
+---
+# defaults file for sns-url
+state: ""
+base: ""
+urlgroups: []
+urlcategorygroups: []
+cngroups: []
+cncategorygroups: []
+urlfiltering: []
+sslfiltering: []
+blockpages: []

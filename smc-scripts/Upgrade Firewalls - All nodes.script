@@ -1,0 +1,11 @@
+# 
+# Upgrade firmware of all firewalls to target version (to be changed in this file)
+# 
+# WARNING - With this script both nodes of clusters will be updated simultaneously
+# Network will be down during upgrade and reboot process
+#
+# Upgrade file (.maj) must be uploaded in SMC as script attachment.
+#
+
+SYSTEM UPDATE UPLOAD fwserial=all $FROM_DATA_FILE("fwupd-3.6.0-%FW_UPD_SUFFIX%")
+SYSTEM UPDATE ACTIVATE fwserial=all

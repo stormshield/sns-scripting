@@ -1,0 +1,78 @@
+- set_fact:
+    cmd: "CONFIG FILTER RULE {{ 'UPDATE' if mode == 'update' else 'INSERT' }} index={{ slot }} type={{ type }} global={{ '0' if scope == 'local' else '1' }} state={{ 'off' if rule.state is defined and rule.state == 'off' else 'on'}}"
+
+- name: build rule
+  set_fact:
+    cmd: "{{ cmd }} {{ item }}=\"{{ rule[item]}}\""
+  when: rule[item] is defined
+  loop:
+    - position
+    - name
+    - action
+    - loglevel
+    - noconnlog
+    - count
+    - rate
+    - synproxy
+    - settos
+    - qosid
+    - qosfairness
+    - route
+    - inspection
+    - antivirus
+    - sandboxing
+    - antispam
+    - proxycache
+    - ftpfiltering
+    - urlfiltering
+    - mailfiltering
+    - sslfiltering
+    - fwservice
+    - webportalexcept
+    - inbound
+    - schedule
+    - securityinspection
+    - tos
+    - ipstate
+    - ipproto
+    - icmptype
+    - srcuser
+    - srcusertype
+    - srcuserdomain
+    - srcusermethod
+    - srctarget
+    - srcportop
+    - srcport
+    - srcif
+    - srcgeo
+    - srciprep
+    - srchostrep
+    - srchostrepop
+    - via
+    - dsttarget
+    - dstportop
+    - dstport
+    - dstgeo
+    - dstiprep
+    - dsthostrep
+    - dsthostrepop
+    - natsrctarget
+    - natsrclb
+    - natsrcarp
+    - natsrcportop
+    - natsrcport
+    - natsrcportlb
+    - natdsttarget
+    - natdstlb
+    - natdstarp
+    - natdstportop
+    - natdstport
+    - natdstportlb
+    - beforevpn
+    - enforceipsecforward
+    - enforceipsecreverse
+    - comment
+    - rulename
+
+- set_fact:
+      script: "{{ script }}{{ cmd }}\n"

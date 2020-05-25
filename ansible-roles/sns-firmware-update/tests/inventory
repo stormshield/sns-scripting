@@ -1,0 +1,12 @@
+sns_appliances:
+  hosts:
+    appliance1:
+      ansible_connection: local
+      appliance:
+        host: 10.0.0.254
+        user: admin
+        password: password123
+        sslverifyhost: false
+      arch: amd64
+      model: S
+

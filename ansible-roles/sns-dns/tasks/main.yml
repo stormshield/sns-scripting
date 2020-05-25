@@ -1,0 +1,34 @@
+---
+# tasks file for sns-dns
+
+- name: Get current dns configuration
+  sns_command:
+    appliance: "{{ hostvars[inventory_hostname].appliance }}"
+    command: CONFIG DNS SERVER LIST 
+  register: dns_old_servers
+  changed_when: False
+
+- name: create temporary file
+  tempfile:
+    state: file
+    suffix: sns-dns
+  register: tmpfile
+  changed_when: False
+
+- name: Generate dns configuration script
+  template:
+    src: sns-dns.script
+    dest: "{{ tmpfile.path }}"
+  changed_when: False
+
+- name: Execute ntp configuration script
+  sns_command:
+    appliance: "{{ hostvars[inventory_hostname].appliance }}"
+    force_modify: "{{ hostvars[inventory_hostname].force_modify | default(false) }}"
+    script: "{{ lookup('file', tmpfile.path) }}"
+
+- name: Clean-up
+  file:
+    state: absent
+    path: "{{ tmpfile.path }}"
+  changed_when: False

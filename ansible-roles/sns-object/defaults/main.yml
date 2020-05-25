@@ -1,0 +1,18 @@
+---
+# defaults file for sns-object
+scope: local
+state: ""
+mode: reset
+hosts: []
+ranges: []
+networks: []
+netgroups: []
+services: []
+servicegroups: []
+protocols: []
+timeobjects: []
+fqdnobjects: []
+geogroups: []
+iprepgroups: []
+routers: []
+qos: {}

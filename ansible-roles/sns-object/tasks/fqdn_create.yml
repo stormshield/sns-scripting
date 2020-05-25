@@ -1,0 +1,28 @@
+# name:<fqdn>, ip:<ipaddress>, ipv6:<ipv6address>, color:xxxxxx, comment:comment> 
+
+- name: Build command (name)
+  set_fact:
+    cmd: "CONFIG {{ 'GLOBAL ' if scope == 'global' else '' }}OBJECT FQDN NEW update=1 name={{ item.name }}"
+
+- name : Build command (ip)
+  set_fact:
+    cmd: "{{ cmd }} ip={{ item.ip }}"
+  when: item.ip is defined
+
+- name : Build command (ipv6)
+  set_fact:
+    cmd: "{{ cmd }} ipv6={{ item.ipv6 }}"
+  when: item.ipv6 is defined
+
+- name : Build command (color)
+  set_fact:
+    cmd: "{{ cmd }} color={{ item.color }}"
+  when: item.color is defined
+
+- name : Build command (comment)
+  set_fact:
+    cmd: "{{ cmd }} comment=\"{{ item.comment }}\""
+  when: item.comment is defined
+
+- set_fact:
+      script: "{{ script }}{{ cmd }}\n"

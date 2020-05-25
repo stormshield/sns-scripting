@@ -1,0 +1,27 @@
+
+
+# index=<profile index> id=<int> context=(protocol|<ASQ context name>) [action=(pass|block)] [level=(minor|major|ignore)] [dump=(0|1)] [email=off | email=on emailduration=<seconds> emailcount=<int>] [blacklist=off | blacklist=on blduration=<minutes>] [comment=<string>] [qid=<Queue name>]
+
+
+- name: Build command
+  set_fact:
+    cmd: "CONFIG PROTOCOL {{ protocol.upper() }} PROFILE ALARM UPDATE index={{ alarm.index }} id={{ alarm.id }} context={{ alarm.context }}"
+
+- name: Add options
+  set_fact:
+    cmd: "{{ cmd }} {{ item }}={{ alarm[item] }}"
+  when: alarm[item] is defined
+  loop:
+    - action
+    - level
+    - dump
+    - email
+    - emailduration
+    - emailcount
+    - blacklist
+    - blduration
+    - comment
+    - qid
+
+- set_fact:
+    script: "{{ script }}{{ cmd }}\n"

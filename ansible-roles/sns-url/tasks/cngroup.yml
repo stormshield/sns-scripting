@@ -1,0 +1,53 @@
+# CONFIG OBJECT URLGROUP NEW name=<groupname> type=(urlgroup|cngroup) [comment=<comment>] [update=<0|1>]
+# CONFIG OBJECT URLGROUP ADDTO group=<groupname> type=(urlgroup|cngroup) url=<url> [comment=<comment>] [update=<0|1>]
+
+- name: Creating cngroup
+  set_fact:
+    cmd: "CONFIG OBJECT URLGROUP NEW type=cngroup name={{ cngroup.name }} comment=\"{{ cngroup.comment if cngroup.comment is defined else '' }}\""
+  when: "current.data.Object
+         | selectattr('type', 'equalto', 'cngroup')
+         | selectattr('name', 'equalto', cngroup.name)
+         | list | length == 0"
+
+- name: Updating cngroup
+  set_fact:
+    cmd: "CONFIG OBJECT URLGROUP NEW type=cngroup update=1 name={{ cngroup.name }} comment=\"{{ cngroup.comment if cngroup.comment is defined else '' }}\""
+  when: "current.data.Object
+         | selectattr('type', 'equalto', 'cngroup')
+         | selectattr('name', 'equalto', cngroup.name)
+         | list | length == 1"
+
+- set_fact:
+      script: "{{ script }}{{ cmd }}\n"
+
+- block:
+  - name: List CNs
+    sns_command:
+      appliance: "{{ hostvars[inventory_hostname].appliance }}"
+      command: "CONFIG OBJECT URLGROUP SHOW type=cngroup name={{ cngroup.name }}"
+    register: cngroup_show
+    changed_when: False
+
+  - name: Empty group
+    set_fact:
+      script: "{{ script }}CONFIG OBJECT URLGROUP REMOVEFROM type=cngroup group={{ cngroup.name }} url=\"{{ item.url }}\"\n"
+    with_items: "{{ cngroup_show.data[cngroup.name] }}"
+    when: cngroup_show.ret != 200
+  when: cngroup.mode is not defined or cngroup.mode == 'reset'
+
+- name: Add CNs
+  set_fact:
+    script: "{{ script }}CONFIG OBJECT URLGROUP ADDTO group={{ cngroup.name }} type=cngroup url=\"{{ cn.cn }}\" comment=\"{{ cn.comment if cn.comment is defined else '' }}\"\n"
+  loop: "{{ cngroup.cns }}"
+  loop_control:
+    loop_var: cn
+  when: cngroup.mode is not defined or cngroup.mode == 'add' or cngroup.mode == 'reset'
+
+- name: Delete CNs
+  set_fact:
+    script: "{{ script }}CONFIG OBJECT URLGROUP REMOVEFROM group={{ cngroup.name }} type=cngroup url=\"{{ cn.cn }}\"\n"
+  loop: "{{ cngroup.cns }}"
+  loop_control:
+    loop_var: cn
+  when: cngroup.mode is defined and cngroup.mode == 'del'
+

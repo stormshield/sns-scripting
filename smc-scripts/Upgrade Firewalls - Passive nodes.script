@@ -1,0 +1,10 @@
+# 
+# Upgrade firmware to target version (to be changed in this file):
+#  - passive nodes of clusters
+#  - standalone (non-cluster) firewalls
+# 
+# Upgrade file (.maj) must be uploaded in SMC as script attachment.
+# 
+
+SYSTEM UPDATE UPLOAD fwserial=passive $FROM_DATA_FILE("fwupd-3.6.0-%FW_UPD_SUFFIX%")
+SYSTEM UPDATE ACTIVATE fwserial=passive

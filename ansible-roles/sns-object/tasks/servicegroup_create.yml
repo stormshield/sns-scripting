@@ -1,0 +1,38 @@
+- name: Build command (name)
+  set_fact:
+    cmd: "CONFIG {{ 'GLOBAL ' if scope == 'global' else '' }}OBJECT SERVICEGROUP NEW update=1 name={{ grp.name }}"
+
+- name: Build command (comment)
+  set_fact:
+    cmd: "{{ cmd }} comment=\"{{ grp.comment }}\""
+  when: grp.comment is defined
+
+- set_fact:
+      script: "{{ script }}{{ cmd }}\n"
+
+- block:
+  - name: Get group members
+    sns_command:
+      appliance: "{{ hostvars[inventory_hostname].appliance }}"
+      command: "CONFIG {{ 'GLOBAL ' if scope == 'global' else '' }}OBJECT SERVICEGROUP SHOW name={{ grp.name }}"
+    register: group_show
+    changed_when: False
+
+  - name: Empty group
+    set_fact:
+      script: "{{ script }}CONFIG {{ 'GLOBAL ' if scope == 'global' else '' }}OBJECT SERVICEGROUP REMOVEFROM group={{ grp.name }} node={{ item.name }}\n"
+    with_items: "{{ group_show.data[grp.name]}}"
+    when: group_show.ret != 200
+  when: grp.mode is not defined or grp.mode == 'reset'
+
+- name: Populate group
+  set_fact:
+    script: "{{ script }}CONFIG {{ 'GLOBAL ' if scope == 'global' else '' }}OBJECT SERVICEGROUP ADDTO group={{ grp.name}} node={{ item }}\n"
+  with_items: "{{ grp.members }}"
+  when: grp.mode is not defined or grp.mode == 'add' or grp.mode == 'reset'
+
+- name: Delete group members
+  set_fact:
+    script: "{{ script }}CONFIG {{ 'GLOBAL ' if scope == 'global' else '' }}OBJECT SERVICEGROUP REMOVEFROM group={{ grp.name}} node={{ item }}\n"
+  with_items: "{{ grp.members }}"
+  when: grp.mode is defined and grp.mode == 'del'

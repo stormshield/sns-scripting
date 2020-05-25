@@ -1,0 +1,32 @@
+# type:<principalgateway|backupgateway>, host:<host>, check:<host|group>, weight:<int>, monitor: <none|icmp>
+
+- set_fact:
+    cmd: "CONFIG {{ 'GLOBAL ' if scope == 'global' else '' }}OBJECT ROUTER GATEWAY ADD name={{ router.name}}"
+
+- name : Build command (type)
+  set_fact:
+    cmd: "{{ cmd }} type={{ gateway.type }}"
+  when: gateway.type is defined
+
+- name : Build command (host)
+  set_fact:
+    cmd: "{{ cmd }} host={{ gateway.host }}"
+  when: gateway.host is defined
+
+- name : Build command (check)
+  set_fact:
+    cmd: "{{ cmd }} check={{ gateway.check }}"
+  when: gateway.check is defined
+
+- name : Build command (weight)
+  set_fact:
+    cmd: "{{ cmd }} weight={{ gateway.weight }}"
+  when: gateway.weight is defined
+
+- name : Build command (monitor)
+  set_fact:
+    cmd: "{{ cmd }} monitor={{ gateway.monitor }}"
+  when: gateway.monitor is defined
+
+- set_fact:
+      script: "{{ script }}{{ cmd }}\n"

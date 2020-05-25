@@ -1,0 +1,61 @@
+---
+# tasks file for sns-backup
+
+- name: Set backup file (with timestamp)
+  set_fact:
+     backup_file: "{{ backup_path }}/{{ ansible_date_time.iso8601_basic_short }}_{{ backup }}"
+  when:
+    - backup != ""
+    - timestamp_prefix == true
+
+- name: Set backup file
+  set_fact:
+    backup_file: "{{ backup_path }}/{{ backup }}"
+  when:
+    - backup != ""
+    - timestamp_prefix == false
+
+- name: Backup configuration (with password)
+  sns_command:
+    appliance: "{{ hostvars[inventory_hostname].appliance }}"
+    command: "CONFIG BACKUP list={{ list }} password={{ password }}> {{ backup_file }}"
+  when: backup != "" and password != ""
+  register: result
+
+- name: Backup configuration
+  sns_command:
+    appliance: "{{ hostvars[inventory_hostname].appliance }}"
+    command: "CONFIG BACKUP list={{ list }} > {{ backup_file }}"
+  when: backup != "" and password == ""
+  register: result
+
+- name: Check result
+  fail:
+    msg: "Operation failed: {{ result.result }}"
+  when: result.changed and result.ret >= 200
+
+- name: Set restore file
+  set_fact:
+    backup_file: "{{ backup_path }}/{{ restore }}"
+  when: restore != ""
+
+- name: Restore configuration (with password)
+  sns_command:
+    appliance: "{{ hostvars[inventory_hostname].appliance }}"
+    command: "CONFIG RESTORE list={{ list|join(',') }} password={{ password }} < {{ backup_file }}"
+    force_modify: "{{ hostvars[inventory_hostname].force_modify | default(false) }}"
+  when: restore != "" and password != ""
+  register: result
+
+- name: Restore configuration
+  sns_command:
+    appliance: "{{ hostvars[inventory_hostname].appliance }}"
+    command: "CONFIG RESTORE list={{ list|join(',') }} < {{ backup_file }}"
+    force_modify: "{{ hostvars[inventory_hostname].force_modify | default(false) }}"
+  when: restore != "" and password == ""
+  register: result
+
+- name: Check result
+  fail:
+    msg: "Operation failed: {{ result.result }}"
+  when: result.changed and result.ret >= 200
