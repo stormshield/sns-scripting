@@ -4,11 +4,6 @@
 Script to collect SNS logs
 """
 
-# TODO
-# check no double in logs
-# get logger from lib
-# multi-utm with a section for each utm in the ini
-
 import sys
 import logging
 import os
