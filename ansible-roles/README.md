@@ -69,7 +69,22 @@ sns_appliances:
         sslverifyhost: false
 ```
 
-Note: a specific inventory file can be used by adding -i inventory.yml to the `ansible-playbook` command.
+If you want to verify the CN of the appliance certificate, set the `host` parameter to the appliance serial number and the `ip` parameter to the product IP address.
+
+```
+sns_appliances:
+  hosts:
+    utm1:
+      ansible_connection: local
+      appliance:
+        host: VMSNSX08K000111
+        ip: 10.0.0.254
+        user: admin
+        password: secret
+        sslverifyhost: true
+```
+
+Note: a local inventory file can be used by adding -i inventory.yml to the `ansible-playbook` command.
 
 ### Improve ansible-playbook output (optional)
 
