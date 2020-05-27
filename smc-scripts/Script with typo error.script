@@ -1,9 +1,0 @@
-# Create object LAN (depending on site ID)
-CONIG OBJECT NETWORK NEW NAME=Users_LAN COMMENT="LAN for all users" IP=192.168.%FW_CUSTOM1%.0 MASK=255.255.255.0 UPDATE=1
-
-# Create rule
-CONFIG FILTER RULE INSERT TYPE=filter STATE=on ACTION=pass srctarget=Users_LAN dsttarget=Internet dstport=http,https,dns comment="Created on %NOW%, by SMC script" index=1 global=0 output=xml position=1
-
-# Activate rule
-CONFIG FILTER ACTIVATE
-CONFIG SLOT ACTIVATE type=filter slot=1
