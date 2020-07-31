@@ -1,8 +1,8 @@
 # Python API scripts
 
-- **logcollector** tool to collect SNS logs
-- **alarmlist.py** tool to get alarm list from an SNS appliance
-- **route.py** tool to get static routing from an SNS appliance
+- **logcollector**: tool to collect SNS logs
+- **alarmlist.py**: tool to get alarm list from an SNS appliance
+- **route.py**: tool to get static routing from an SNS appliance
 
 ### Requirements
 

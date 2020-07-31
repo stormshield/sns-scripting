@@ -30,6 +30,9 @@ Architecture to update (default to inventory `arch` variable).
 
 Model of the appliance to update (default to inventory `model` variable).
 
+    system_clone: True|False
+
+Backup the system partition before update (default to `False`).
 
 Dependencies
 ------------
@@ -45,7 +48,8 @@ This playbook upgrade the firmware of a SNS VM.
     - hosts: all
       roles:
         - role: sns-firmware-update
-          version: 3.8.0
+          version: 4.1.0
+          system_clone: False
 
 With the inventory referencing the `arch` and `model` parameters:
 
@@ -57,9 +61,10 @@ With the inventory referencing the `arch` and `model` parameters:
             host: 10.0.0.254
             user: admin
             password: password123
-            sslverifyhost: false
+            sslverifyhost: False
           arch: amd64
           model: XL-VM
+          force_modify: True
 
 
 License

@@ -20,6 +20,14 @@
   with_items: "{{ hacluster.data.HA }}"
   changed_when: False
 
+- name: Copy current version to backup partition (passive)
+  sns_command:
+    appliance: "{{ appliance }}"
+    script: |
+      SYSTEM CLONE type=dump fwserial=passive
+    force_modify: "{{ hostvars[inventory_hostname].force_modify | default(false) }}"
+  when: system_clone == True
+
 - name: Update passive firewall
   sns_command:
     appliance: "{{ appliance }}"
@@ -40,6 +48,14 @@
   retries: 20
   delay: 30
   changed_when: False
+
+- name: Copy current version to backup partition (active)
+  sns_command:
+    appliance: "{{ appliance }}"
+    script: |
+      SYSTEM CLONE type=dump fwserial=active
+    force_modify: "{{ hostvars[inventory_hostname].force_modify | default(false) }}"
+  when: system_clone == True
 
 - name: Update active firewall and swap
   sns_command:

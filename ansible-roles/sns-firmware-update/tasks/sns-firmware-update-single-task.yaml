@@ -1,3 +1,11 @@
+- name: Copy current version to backup partition
+  sns_command:
+    appliance: "{{ appliance }}"
+    script: |
+      SYSTEM CLONE type=dump
+    force_modify: "{{ hostvars[inventory_hostname].force_modify | default(false) }}"
+  when: system_clone == True
+
 - name: Update SNS appliance
   sns_command:
     appliance: "{{ appliance }}"
