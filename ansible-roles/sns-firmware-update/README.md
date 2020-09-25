@@ -45,7 +45,8 @@ Example Playbook
 This playbook upgrade the firmware of a SNS VM.
 
     ---
-    - hosts: all
+    - hosts: sns-appliances
+      serial: 1
       roles:
         - role: sns-firmware-update
           version: 4.1.0
@@ -66,6 +67,7 @@ With the inventory referencing the `arch` and `model` parameters:
           model: XL-VM
           force_modify: True
 
+Note: Using rolling updates (serial: 1) is recommended for the playbook.
 
 License
 -------
