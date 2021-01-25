@@ -5,6 +5,10 @@
     script: ""
 
 - block:
+  - name: "CSV import"
+    include_tasks: csv_import.yml
+    loop: "{{ csvfileimport }}"
+
   - name: "Creating hosts"
     include_tasks: host_create.yml
     loop: "{{ hosts }}"

@@ -14,6 +14,7 @@ The Ansible-SNS module and python-SNS-API package are required.
 Role Variables
 --------------
 
+    csvfileimport: [<file.csv>]
     hosts:
       - { name: <hostname>, ip: <ipaddress>, ipv6: <ipv6address>, type: router|server|host, resolve: static|dynamic|manual, mac: xx:xx:xx:xx:xx:xx, color: xxxxxx, comment: <comment> }
     ranges:
@@ -102,6 +103,14 @@ This playbook deletes an object:
           networks :
             - { name: mynetwork }
 
+This playbook import a CSV file describing the objects:
+
+    ---
+    - hosts: sns_appliances
+      roles:
+        - role: sns-object
+          csvfileimport:
+            - /path/myobjects.csv
 
 License
 -------

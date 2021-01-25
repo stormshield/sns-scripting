@@ -1,0 +1,4 @@
+- name: "Importing objects..."
+  sns_object_import:
+    appliance: "{{ hostvars[inventory_hostname].appliance }}"
+    path: "{{ item }}"
