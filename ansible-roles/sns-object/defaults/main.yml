@@ -3,6 +3,7 @@
 scope: local
 state: ""
 mode: reset
+csvfileimport: []
 hosts: []
 ranges: []
 networks: []
