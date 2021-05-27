@@ -38,7 +38,7 @@ Role Variables
     iprepgroups:
       - { name:<iprepgroupname>, comment:<iprepgroup comment>, members: [], mode: <add|reset> }
     routers:
-      - { name:<router name>, comment:<comment>, tries:<int>, wait:<seconds>, frequency:<seconds> gatewaythreshold:<int>, activateallbackup:(on|off), loadbalancing:<none|connhash|srchash>, onfailpolicy:(pass|block), gateways:[ {type:<principalgateway|backupgateway>, host:<host>, check:<host|group>, weight:<int>, monitor: <none|icmp>} ], mode: <add|reset> }
+      - { name:<router name>, monitor:(ICMP|TCP_PROBE), comment:<comment>, tries:<int>, wait:<seconds>, frequency:<seconds> gatewaythreshold:<int>, activateallbackup:(on|off), loadbalancing:<none|connhash|srchash>, onfailpolicy:(pass|block), gateways:[ {type:<principalgateway|backupgateway>, host:<host>, check:<host|group>, weight:<int>, monitor: <none|icmp|all>} ], mode: <add|reset> }
     internet:
       object: <host|network|range|group>
       operator: <ne|eq>
