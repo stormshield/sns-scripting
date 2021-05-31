@@ -1,4 +1,4 @@
-# type:<principalgateway|backupgateway>, host:<host>, check:<host|group>, weight:<int>, monitor: <none|icmp>
+# type:<principalgateway|backupgateway>, host:<host>, check:<host|group>, weight:<int>, monitor: <none|icmp|all>
 
 - set_fact:
     cmd: "CONFIG {{ 'GLOBAL ' if scope == 'global' else '' }}OBJECT ROUTER GATEWAY ADD name={{ router.name}}"

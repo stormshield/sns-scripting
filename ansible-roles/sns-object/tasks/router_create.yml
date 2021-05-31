@@ -1,4 +1,4 @@
-# name=<router name> [comment=<comment>] [tries=<int>] [wait=<seconds>] [frequency=<seconds>] [gatewaythreshold=<int>] [activateallbackup=(on|off)] 
+# name=<router name> [monitor=(ICMP|TCP_PROBE)] [comment=<comment>] [tries=<int>] [wait=<seconds>] [frequency=<seconds>] [gatewaythreshold=<int>] [activateallbackup=(on|off)] 
 # [loadbalancing=<none|connhash|srchash>] [onfailpolicy=(pass|block)]
 
 - name: Build command (name)
@@ -9,6 +9,11 @@
   set_fact:
     cmd: "{{ cmd }} tries={{ router.tries }}"
   when: router.tries is defined
+
+- name : Build command (monitor)
+  set_fact:
+    cmd: "{{ cmd }} monitor={{ router.monitor }}"
+  when: router.monitor is defined
 
 - name : Build command (wait)
   set_fact:
