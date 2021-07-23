@@ -1,0 +1,72 @@
+# config object qos qid add qid=<qid> [comment=<comment>]
+# (type=CBQ min=<min> min_rev=<minrev> max=<max> max_rev=<maxrev>) |
+# (type=<PRIQ> pri=<pri>) [color=<color>] [length=<queue_length>]
+#  [lengthrev=<queue_length>] [prioritizeack=<on|off>] [prioritizelowdelay=<on|off>]
+#  [update=<on|off>]
+
+- name: Build command (name)
+  set_fact:
+    cmd: "CONFIG OBJECT QOS QID ADD update=1 qid={{ item.name }}"
+
+- name : Build command (comment)
+  set_fact:
+    cmd: "{{ cmd }} comment=\"{{ item.comment }}\""
+  when: item.comment is defined
+
+- name : Build command (type)
+  set_fact:
+    cmd: "{{ cmd }} type={{ item.type }}"
+  when: item.type is defined
+
+- name : Build command (min)
+  set_fact:
+    cmd: "{{ cmd }} min={{ item.min }}"
+  when: item.min is defined
+
+- name : Build command (max)
+  set_fact:
+    cmd: "{{ cmd }} max={{ item.max }}"
+  when: item.max is defined
+
+- name : Build command (min_rev)
+  set_fact:
+    cmd: "{{ cmd }} min_rev={{ item.min_rev }}"
+  when: item.min_rev is defined
+
+- name : Build command (max_rev)
+  set_fact:
+    cmd: "{{ cmd }} max_rev={{ item.max_rev }}"
+  when: item.max_rev is defined
+
+- name : Build command (pri)
+  set_fact:
+    cmd: "{{ cmd }} pri={{ item.pri }}"
+  when: item.pri is defined
+
+- name : Build command (color)
+  set_fact:
+   cmd: "{{ cmd }} color={{ item.color }}"
+  when: item.color is defined
+
+- name : Build command (length)
+  set_fact:
+    cmd: "{{ cmd }} length={{ item.length }}"
+  when: item.length is defined
+
+- name : Build command (lengthrev)
+  set_fact:
+    cmd: "{{ cmd }} length={{ item.lengthrev }}"
+  when: item.lengthrev is defined
+
+- name : Build command (prioritizeack)
+  set_fact:
+    cmd: "{{ cmd }} prioritizeack={{ 'on' if item.prioritizeack else 'off' }}"
+  when: item.prioritizeack is defined
+
+- name : Build command (prioritizelowdelay)
+  set_fact:
+    cmd: "{{ cmd }} prioritizelowdelay={{ 'on' if item.prioritizelowdelay else 'off' }}"
+  when: item.prioritizelowdelay is defined
+
+- set_fact:
+    script: "{{ script }}{{ cmd }}\n"

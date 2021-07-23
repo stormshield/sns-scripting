@@ -1,0 +1,13 @@
+# config object qos tbr set name=<name> bandwidth=<bw kbps>
+
+- name: Build command (name)
+  set_fact:
+    cmd: "CONFIG OBJECT QOS TBR SET name={{ item.name }}"
+
+- name : Build command (bandwidth)
+  set_fact:
+    cmd: "{{ cmd }} bandwidth={{ item.bandwidth }}"
+  when: item.bandwidth is defined
+
+- set_fact:
+    script: "{{ script }}{{ cmd }}\n"

@@ -16,6 +16,7 @@
     - synproxy
     - settos
     - qosid
+    - ackqosid
     - qosfairness
     - route
     - inspection

@@ -1,0 +1,23 @@
+# config object qos interface set name=<name> [tbr=<tbr>] [defaultqueue=<qid|bypass>] [defaultackqueue=<qid|bypass>]
+
+- name: Build command (name)
+  set_fact:
+    cmd: "CONFIG OBJECT QOS INTERFACE SET name={{ item.name }}"
+
+- name : Build command (tbr)
+  set_fact:
+    cmd: "{{ cmd }} tbr={{ item.tbr }}"
+  when: item.tbr is defined
+
+- name : Build command (defaultqueue)
+  set_fact:
+    cmd: "{{ cmd }} defaultqueue={{ item.defaultqueue }}"
+  when: item.defaultqueue is defined
+
+- name : Build command (defaultackqueue)
+  set_fact:
+    cmd: "{{ cmd }} defaultackqueue={{ item.defaultackqueue }}"
+  when: item.defaultackqueue is defined
+
+- set_fact:
+    script: "{{ script }}{{ cmd }}\n"

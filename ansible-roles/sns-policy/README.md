@@ -41,6 +41,7 @@ NAT and filter rules tokens are:
 [synproxy=(on|off)]
 [settos=(|<1-254>)]
 [qosid=(|<qid name>)]
+[ackqosid=(|<qid name>)]
 [qosfairness=(|state|user|host)]
 [route=(|<objrouter>|<hostname>|<ipaddr>)]
 [inspection=(firewall|ids|ips)]
@@ -116,6 +117,8 @@ Activate the slot (default to yes).
     mode: add|reset|del
 
 With `reset`, flush the rules before adding, `add` inserts rules in existing slot, `del` deletes specified rules  (default to `reset`).
+
+Note: ackqosid parameter appears in 4.3.0
 
 Dependencies
 ------------
