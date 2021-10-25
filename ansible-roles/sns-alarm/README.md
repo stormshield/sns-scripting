@@ -20,7 +20,9 @@ Role Variables
 
 Alarm definition options are: 
 
-    [action=(pass|block)] [level=(minor|major|ignore)] [dump=(0|1)] [email=off | email=on emailduration=<seconds> emailcount=<int>] [blacklist=off | blacklist=on blduration=<minutes>] [comment=<string>] [qid=<Queue name>]
+    [action=(pass|block)] [level=(minor|major|ignore)] [dump=(0|1)] [email=off | email=on emailduration=<seconds> emailcount=<int>] [blacklist=off | blacklist=on blduration=<minutes>] [comment=<string>] [qid=<Queue name>] [ackqid=<Queue name>]
+
+Note: ackqid parameter appears in 4.3.0
 
 Dependencies
 ------------

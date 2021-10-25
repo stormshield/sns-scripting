@@ -47,7 +47,11 @@ Role Variables
       drop: <0 (TailDrop) |1 (Blue)>
       defaultqueue: <qid|bypass>
       qids:
-        - { name:<qid>, comment:<comment> (type:CBQ, min:<min>, min_rev:<minrev>, max:<max>, max_rev:<maxrev>) | (type:<PRIQ>, pri:<pri>), color:<color>, length:<queue_length>, prioritizeack:<on|off>,prioritizelowdelay:<on|off> }
+        - { name:<qid>, comment:<comment> (type:CBQ, min:<min>, min_rev:<minrev>, max:<max>, max_rev:<maxrev>) | (type:<PRIQ>, pri:<pri>), color:<color>, length:<queue_length>, lengthrev:<queue_length>, prioritizeack:<on|off>,prioritizelowdelay:<on|off> }
+      tbrs:
+        - { name:<tbrname>, bandwidth:<bandwidth>  }
+      interfaces:
+        - { name:<interface name>, tbr:<tbrname>, tbr:<tbrname>, defaultqueue=<qid|bypass>, defaultackqueue=<qid|bypass> }
 
 List of objects to create or update.
 
@@ -64,6 +68,7 @@ Choose object base (default to local). QIDs are only local.
 For routers, the token `monitor:(ICMP|TCP_PROBE)` appears in version 4.3.0 to choose the monitoring method for SDWAN purpose.
 For gateways in routers, from 4.3.0 version, the token `monitor` accepts the values `none` or `all` (and `icmp` too for the retrocompatibility).
 
+For qos, from 4.3.0 version: qid token `lengthrev`, tbrs and interfaces appears in this version, and global bandwidth and default queues become obsolete.
 
 Dependencies
 ------------
