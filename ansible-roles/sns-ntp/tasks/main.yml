@@ -1,12 +1,4 @@
 ---
-
-- name: create temporary file
-  tempfile:
-    state: file
-    suffix: sns-dns
-  register: tmpfile
-  changed_when: False
-
 - name: Get current ntp configuration (servers)
   sns_command:
     appliance: "{{ hostvars[inventory_hostname].appliance }}"
@@ -35,16 +27,10 @@
   register: ntp_old_servers
   changed_when: False
 
-- name: Generate ntp configuration script
-  template:
-    src: sns-ntp.script
-    dest: "{{ tmpfile.path }}"
-  changed_when: False
-
 - name: Execute ntp configuration script
   sns_command:
     appliance: "{{ hostvars[inventory_hostname].appliance }}"
-    script: "{{ lookup('file', tmpfile.path) }}"
+    script: "{{ lookup('template', 'sns-ntp.j2') }}"
     force_modify: "{{ hostvars[inventory_hostname].force_modify | default(false) }}"
   register: script_result
 
@@ -72,9 +58,3 @@
   when: 
     - reboot_if_needed
     - script_result.need_reboot
-
-- name: Clean-up
-  file:
-    state: absent
-    path: "{{ tmpfile.path }}"
-  changed_when: False
