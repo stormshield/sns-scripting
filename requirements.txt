@@ -1,1 +1,2 @@
 stormshield.sns.sslclient
+dnspython
