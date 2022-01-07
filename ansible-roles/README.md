@@ -254,3 +254,56 @@ changed: [appliance1]
 PLAY RECAP ******************************************************************************************************************************************************************
 appliance1                 : ok=26   changed=2    unreachable=0    failed=0    skipped=40   rescued=0    ignored=0
 ```
+
+
+## Encrypt SNS passwords with Ansible Vault
+
+SNS passwords can be read in the inventory:
+
+```yaml
+sns_appliances:
+  hosts:
+    utm1:
+      ansible_connection: local
+      appliance:
+        host: 192.168.152.129
+        user: admin
+        password: secret
+        sslverifyhost: false
+```
+
+To add a layer of security, we can create a ciphered file protected by a master password which will contains all the SNS passwords.
+
+### Create a encrypted variable file for the inventory group
+
+    mkdir -p groups_vars/sns_appliances
+    ansible-vault create groups_vars/sns_appliances/vault.yml
+
+The encrypted file can be later edited:
+
+    ansible-vault edit groups_vars/sns_appliances/vault.yml
+
+### Add entries for the inventory
+
+```yaml
+---
+utm1_password: "secret"
+```
+
+### Edit the inventory and replace the password by the variable referencing the encrypted password:
+
+```yaml
+sns_appliances:
+  hosts:
+    utm1:
+      ansible_connection: local
+      appliance:
+        host: 10.0.0.254
+        user: admin
+        password: "{{utm1_password}}"
+        sslverifyhost: false
+```
+
+### Run the playbook and provide the master password:
+
+    ansible-playbook -i inventory.yml --ask-vault-pass sysprop.yml
