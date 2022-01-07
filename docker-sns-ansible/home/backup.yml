@@ -1,0 +1,6 @@
+- hosts: sns_appliances
+  roles:
+    - role: sns-backup
+      backup_path: "./backup"
+      backup: "mybackup.na"
+      timestamp_prefix: true
