@@ -55,7 +55,7 @@ This playbook backup the configuration.
       roles:
         - role: sns-backup
           backup_path: "/backup"
-          backup: "mybackup.na"
+          backup: "{{ inventory_hostname }}.na"
           timestamp_prefix: true
 
 License
