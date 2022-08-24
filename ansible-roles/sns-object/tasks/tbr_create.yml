@@ -9,5 +9,10 @@
     cmd: "{{ cmd }} bandwidth={{ item.bandwidth }}"
   when: item.bandwidth is defined
 
+- name : Build command (bandwidthin)
+  set_fact:
+    cmd: "{{ cmd }} bandwidthin={{ item.bandwidthin }}"
+  when: item.bandwidthin is defined
+
 - set_fact:
     script: "{{ script }}{{ cmd }}\n"
