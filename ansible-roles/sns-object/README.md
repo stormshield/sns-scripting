@@ -49,7 +49,7 @@ Role Variables
       qids:
         - { name:<qid>, comment:<comment> (type:CBQ, min:<min>, min_rev:<minrev>, max:<max>, max_rev:<maxrev>) | (type:<PRIQ>, pri:<pri>), color:<color>, length:<queue_length>, lengthrev:<queue_length>, prioritizeack:<on|off>,prioritizelowdelay:<on|off> }
       tbrs:
-        - { name:<tbrname>, bandwidth:<bandwidth>  }
+        - { name:<tbrname>, bandwidth:<bandwidth>, bandwidthin:<bandwidth>  }
       interfaces:
         - { name:<interface name>, tbr:<tbrname>, tbr:<tbrname>, defaultqueue=<qid|bypass>, defaultackqueue=<qid|bypass> }
 
