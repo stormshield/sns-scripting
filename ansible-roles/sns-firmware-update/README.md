@@ -45,7 +45,7 @@ Example Playbook
 This playbook upgrade the firmware of a SNS VM.
 
     ---
-    - hosts: sns-appliances
+    - hosts: sns_appliances
       serial: 1
       roles:
         - role: sns-firmware-update

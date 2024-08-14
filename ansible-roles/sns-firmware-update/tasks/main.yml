@@ -16,6 +16,9 @@
   register: myversion
   changed_when: False
 
+- debug:
+    msg: "Firmware version: {{ myversion.value}}"
+
 - name: Check for HA cluster
   sns_command:
     appliance: "{{ appliance }}"
@@ -27,14 +30,14 @@
     - name: Check if firmware is not already installed
       debug:
         msg: "Firmware already installed"
-    - meta: end_play
+    - meta: end_host
   when: "version == myversion.value"
 
 - block:
     - name: Check if appliance firmware is not more recent
       debug:
         msg: "Firmware on appliance is more recent"
-    - meta: end_play
+    - meta: end_host
   when: "myversion.value is version(version, '>')"
 
 - name: Check if firmware update is already downloaded
@@ -52,9 +55,9 @@
     msg: "Updating firmware from {{ myversion.value }} to {{ version }}"
 
 - name: Update appliance
-  include: sns-firmware-update-single-task.yaml
+  include_tasks: sns-firmware-update-single-task.yaml
   when: "hainfo.ret == 200"
 
 - name: Update cluster
-  include: sns-firmware-update-cluster-task.yaml
+  include_tasks: sns-firmware-update-cluster-task.yaml
   when: "hainfo.ret == 100"
