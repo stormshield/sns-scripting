@@ -2,6 +2,7 @@
 
 This repository contains CLI script examples to configure and maintain SNS appliances:
 - Scripts for SMC
+- SMC object CLI
 - Python scripts using [python-SNS-API](https://github.com/stormshield/python-SNS-API)
 - Ansible roles
 
