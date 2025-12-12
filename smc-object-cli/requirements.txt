@@ -1,0 +1,4 @@
+rich~=14.2.0
+requests~=2.32.5
+typer-slim[standard]~=0.20.0
+python-dotenv~=1.2.1
