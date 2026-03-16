@@ -2,6 +2,8 @@
 
 Simple CLI example to manipulate SMC objects.
 
+This tool requires SMC 3.9.0.
+
 ## Install
 
 Requires python 3.10
@@ -76,6 +78,11 @@ Alternatively, you can set the environment variables in your shell or use the co
 
 ```
 
-# Tests
+## Tests
 
 Configure a test SMC server in environment or `.env` and launch `pytest`.
+
+## history
+
+- 2.0.0 api call for smc 3.9.0
+- 1.0.0 initial version

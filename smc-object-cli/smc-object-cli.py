@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import os, sys
 import requests
 from dotenv import load_dotenv
 from rich import print
@@ -10,10 +9,11 @@ import typer
 from typing import Literal, List, Union, Optional
 from types import SimpleNamespace
 from typing_extensions import Annotated
+from urllib.parse import urljoin
 
 load_dotenv()
 
-__version__ = "1.0.0"
+__version__ = "2.0.0"
 
 app = typer.Typer(no_args_is_help=True)
 host_app = typer.Typer()
@@ -26,6 +26,8 @@ group_app.add_typer(group_update_app, name="update", help="Update a host group",
 
 def do_http(ctx: typer.Context, path: str, method: Literal["get", "post", "put", "delete"]="get", data=None):
 
+    url = urljoin(ctx.obj.smcurl, path)
+
     headers = {
         "Accept": "application/json",
         "Authorization": "Bearer " + ctx.obj.apikey
@@ -33,25 +35,30 @@ def do_http(ctx: typer.Context, path: str, method: Literal["get", "post", "put",
 
     try:
         if method == "get":
-            r = requests.get(ctx.obj.smcurl + path, verify=ctx.obj.verify, headers=headers)
+            r = requests.get(url, verify=ctx.obj.verify, headers=headers)
         elif method == "post" or method == "put":
             headers["Content-Type"] = "application/json"
 
-            r = requests.request(method=method, url=ctx.obj.smcurl + path, verify=ctx.obj.verify, headers=headers, json=data)
+            r = requests.request(method=method, url=url, verify=ctx.obj.verify, headers=headers, json=data)
         elif method == "delete":
-            r = requests.delete(ctx.obj.smcurl + path, verify=ctx.obj.verify, headers=headers)
+            if data:
+                headers["Content-Type"] = "application/json"
+                r = requests.delete(url, verify=ctx.obj.verify, headers=headers, json=data)
+            else:
+                r = requests.delete(url, verify=ctx.obj.verify, headers=headers)
     except requests.exceptions.SSLError as e:
         print("[red]Error: SSL connection failed[/red]")
         print(str(e))
         print("Try --unsecure or --cacert options.")
-        sys.exit(1)
+        raise typer.Exit(code=1)
 
     if r.status_code != 200:
         print("[red]Error: api call failed[/red] ")
-        print(f"{method.upper()} {path}")
-        print(f"status code: {r.status_code}")
+        print(f"> {method.upper()} {path}")
+        print(data)
+        print(f"< status code: {r.status_code}")
         print(r.text)
-        sys.exit(1)
+        raise typer.Exit(code=1)
 
     return r.json()
 
@@ -164,68 +171,34 @@ def create_group(ctx: typer.Context, name: str, elements: List[str], comment: st
 
 @group_update_app.command("add", help="Add host(s) to an host group")
 def group_add(ctx: typer.Context, group: str, elements: List[str]):
-    # get group members
-
-    data = do_http(ctx, "/papi/v1/objects")
-    g = next((item for item in data["result"]["groups"] if item["name"] == group), None)
-
-    if not g:
-        print(f"[red]Error:[/red] group {group} not found")
-        sys.exit(1)
 
     content = []
-    for m in g["elements"]:
-        content.append({"name": m["name"]})
+    for e in elements:
+        content.append({"name": e})
 
-    # add new members
-    for m in elements:
-        if m not in content:
-            content.append({"name": m})
-
-    do_http(ctx, method="put", path=f"/papi/v1/objects/groups/{group}",
+    do_http(ctx, method="post", path=f"/papi/v1/objects/groups/{group}/members",
             data={
-                "name": g["name"],
-                "comment": g["comment"] if "comment" in g else "",
                 "elements": content
             }
     )
 
-    print(f"[green]Host {', '.join(elements)} added to group {group}[/green]")
+    print(f"[green]Host(s) {', '.join(elements)} added to group {group}[/green]")
 
 
 @group_update_app.command("remove", help="Remove host(s) from an host group")
 def group_remove(ctx: typer.Context, group: str, elements: List[str]):
-    # get group members
 
-    data = do_http(ctx, "/papi/v1/objects")
-    g = next((item for item in data["result"]["groups"] if item["name"] == group), None)
-
-    if not g:
-        print(f"[red]Error:[/red] group {group} not found")
-        sys.exit(1)
-
-    # remove elements
-    found = False
     content = []
-    for e in g["elements"]:
-        if e["name"] not in elements:
-            content.append({"name": e["name"]})
-        else:
-            found = True
+    for e in elements:
+        content.append({"name": e})
 
-    if not found:
-        print(f"[green]Host(s) {', '.join(elements)} not found in the group {group}, nothing to do.[/green]")
-        sys.exit(0)
-
-    do_http(ctx, method="put", path=f"/papi/v1/objects/groups/{group}",
+    do_http(ctx, method="delete", path=f"/papi/v1/objects/groups/{group}/members",
             data={
-                "name": g["name"],
-                "comment": g["comment"] if "comment" in g else "",
                 "elements": content
             }
     )
 
-    print(f"[green]Host {', '.join(elements)} removed from group {group}[/green]")
+    print(f"[green]Host(s) {', '.join(elements)} removed from group {group}[/green]")
 
 
 @host_app.command("delete", help="Delete a host object")

@@ -17,8 +17,8 @@ def gen_ip():
     return ".".join(str(random.randint(0, 255)) for _ in range(4))
 
 def test_add_and_delete_host():
-    name = gen_str(12)
-    comment = gen_str(24)
+    name = "host_" + gen_str(12)
+    comment = "Comment" + gen_str(8)
     ip = gen_ip()
 
     # create a host
@@ -49,17 +49,17 @@ def test_add_and_delete_host():
     assert name not in result.output
 
 def test_group():
-    name = gen_str(12)
-    comment = gen_str(24)
+    name = "host_" + gen_str(12)
+    comment = "Comment" + gen_str(8)
     ip = gen_ip()
 
-    name2 = gen_str(12)
+    name2 = "host_" + gen_str(12)
     ip2 = gen_ip()
 
-    name3 = gen_str(12)
+    name3 = "host_" + gen_str(12)
     ip3 = gen_ip()
 
-    gname = gen_str(12)
+    gname = "group_" + gen_str(12)
     comment = gen_str(24)
 
     # create a host
